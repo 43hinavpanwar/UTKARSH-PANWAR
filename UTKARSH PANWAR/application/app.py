@@ -609,11 +609,15 @@ def set_theme():
 def get_weather():
     if about_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
-    doc = about_col.find_one({'_id': 'about'}, {'location': 1}) or {}
+    doc = about_col.find_one({'_id': 'about'}, {'location': 1, 'weather_cache': 1}) or {}
     loc = doc.get('location', {})
     lat, lon = loc.get('lat'), loc.get('lon')
     if not lat or not lon:
         return jsonify({'error': 'no location set'}), 404
+    cache = doc.get('weather_cache', {})
+    cached_at = cache.get('ts')
+    if cached_at and (datetime.now(timezone.utc) - cached_at).total_seconds() < 1800:
+        return jsonify(cache['data'])
     try:
         import requests as _req
         url = (f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}'
@@ -622,17 +626,21 @@ def get_weather():
         resp = _req.get(url, timeout=8)
         resp.raise_for_status()
         data = resp.json()
-        cur = data['current']
-        return jsonify({
+        cur  = data['current']
+        result = {
             'city':     loc.get('city', ''),
             'temp':     cur['temperature_2m'],
             'code':     cur['weathercode'],
             'wind':     cur['windspeed_10m'],
             'humidity': cur['relativehumidity_2m'],
             'timezone': data.get('timezone', ''),
-        })
+        }
+        about_col.update_one({'_id': 'about'}, {'$set': {'weather_cache': {'data': result, 'ts': datetime.now(timezone.utc)}}})
+        return jsonify(result)
     except Exception as e:
         logger.error(f'Weather fetch failed: {e}')
+        if cache.get('data'):
+            return jsonify(cache['data'])
         return jsonify({'error': str(e)}), 502
 
 # ── AWARDS API ───────────────────────────────────────────────────────────────
