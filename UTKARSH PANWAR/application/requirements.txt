@@ -1,0 +1,6 @@
+flask
+pymongo[srv]
+dnspython
+flask-limiter
+bleach
+gunicorn

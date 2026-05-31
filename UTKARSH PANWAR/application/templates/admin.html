@@ -1,0 +1,1066 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>UTK</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <link rel="icon" href="{{ url_for('static', filename='IMAGE/logo.jpg') }}" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+      color: #e0e0e0;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.5;
+    }
+
+    /* Header */
+    .admin-header {
+      background: rgba(10, 10, 10, 0.95);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(232, 98, 42, 0.2);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(135deg, #fff 0%, #e8622a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .logo span {
+      font-size: 0.85rem;
+      color: #e8622a;
+      display: block;
+      font-weight: 400;
+      letter-spacing: 1px;
+    }
+
+    .logout-btn {
+      background: rgba(232, 98, 42, 0.1);
+      border: 1px solid rgba(232, 98, 42, 0.3);
+      color: #e8622a;
+      padding: 0.6rem 1.2rem;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .logout-btn:hover {
+      background: #e8622a;
+      color: #fff;
+      transform: translateY(-2px);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    /* Section Styles */
+    .section {
+      background: rgba(20, 20, 25, 0.6);
+      backdrop-filter: blur(5px);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 2rem;
+      margin-bottom: 2rem;
+      transition: all 0.3s ease;
+    }
+
+    .section:hover {
+      border-color: rgba(232, 98, 42, 0.3);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      color: #e8622a;
+      margin-bottom: 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      border-bottom: 2px solid rgba(232, 98, 42, 0.3);
+      padding-bottom: 0.75rem;
+    }
+
+    .section-title i {
+      font-size: 1.3rem;
+    }
+
+    /* Form Grid */
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.2rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .field label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #888;
+    }
+
+    .field input,
+    .field textarea,
+    .field select {
+      background: rgba(10, 10, 12, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      color: #fff;
+      font-size: 0.9rem;
+      font-family: 'Inter', monospace;
+      transition: all 0.3s ease;
+    }
+
+    .field input:focus,
+    .field textarea:focus,
+    .field select:focus {
+      outline: none;
+      border-color: #e8622a;
+      box-shadow: 0 0 0 3px rgba(232, 98, 42, 0.1);
+    }
+
+    .field textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    /* Buttons */
+    .btn {
+      margin-top: 0.5rem;
+      padding: 0.7rem 1.4rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #e8622a, #c9521f);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 15px rgba(232, 98, 42, 0.3);
+    }
+
+    .btn-success {
+      background: rgba(74, 222, 128, 0.15);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: #4ade80;
+    }
+
+    .btn-success:hover {
+      background: #4ade80;
+      color: #000;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #f87171;
+    }
+
+    .btn-danger:hover {
+      background: #f87171;
+      color: #000;
+      transform: translateY(-2px);
+    }
+
+    .btn-warning {
+      background: rgba(96, 165, 250, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      color: #60a5fa;
+    }
+
+    .btn-warning:hover {
+      background: #60a5fa;
+      color: #000;
+      transform: translateY(-2px);
+    }
+
+    /* Cards Grid */
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 1rem;
+      margin-top: 1rem;
+      margin-bottom: 1rem;
+    }
+
+    .admin-card {
+      background: rgba(15, 15, 20, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 1.25rem;
+      transition: all 0.3s ease;
+    }
+
+    .admin-card:hover {
+      border-color: rgba(232, 98, 42, 0.4);
+      transform: translateY(-3px);
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .card-title {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #e8622a;
+    }
+
+    /* Video Rows */
+    .video-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      margin-bottom: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .video-row input {
+      flex: 1;
+      min-width: 150px;
+      background: rgba(5, 5, 8, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 6px;
+      padding: 0.5rem 0.75rem;
+      color: #fff;
+      font-size: 0.8rem;
+    }
+
+    /* Messages */
+    .msg {
+      margin-top: 1rem;
+      padding: 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      display: none;
+    }
+
+    .msg.success {
+      background: rgba(74, 222, 128, 0.1);
+      border: 1px solid rgba(74, 222, 128, 0.3);
+      color: #4ade80;
+      display: block;
+    }
+
+    .msg.error {
+      background: rgba(248, 113, 113, 0.1);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: #f87171;
+      display: block;
+    }
+
+    /* Add Section */
+    .add-section {
+      margin-top: 1.5rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+      .container {
+        padding: 1rem;
+      }
+
+      .section {
+        padding: 1.25rem;
+      }
+
+      .cards-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .admin-header {
+        padding: 1rem;
+      }
+
+      .logo h1 {
+        font-size: 1.2rem;
+      }
+
+      .btn {
+        padding: 0.6rem 1rem;
+        font-size: 0.8rem;
+      }
+
+      .video-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      .video-row input {
+        width: 100%;
+      }
+
+      .card-header {
+        flex-direction: column;
+        align-items: stretch;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .section-title {
+        font-size: 1rem;
+      }
+
+      .admin-header {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    /* Scrollbar */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1a1a1a;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #e8622a;
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #c9521f;
+    }
+  </style>
+</head>
+<body>
+
+<header class="admin-header">
+  <div class="logo">
+    <h1>UTK</h1>
+  </div>
+  <a href="/logout" class="logout-btn">
+    <i class="fas fa-sign-out-alt"></i>
+    Logout
+  </a>
+</header>
+
+<main class="container">
+  <!-- VISITS LOG SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-chart-line"></i>
+      <span>Visitor Logs</span>
+      <button class="btn btn-danger" onclick="clearVisits()" style="margin-left:auto;font-size:0.75rem;padding:0.4rem 0.8rem;">
+        <i class="fas fa-trash"></i> Clear All
+      </button>
+    </div>
+    <div id="visit-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:1rem;margin-bottom:1.5rem;"></div>
+    <div style="overflow-x:auto;">
+      <table id="visits-table" style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#888;text-align:left;">
+            <th style="padding:0.5rem 0.75rem;">Time (UTC)</th>
+            <th style="padding:0.5rem 0.75rem;">Visitor</th>
+            <th style="padding:0.5rem 0.75rem;">IP</th>
+            <th style="padding:0.5rem 0.75rem;">Page</th>
+            <th style="padding:0.5rem 0.75rem;">Referrer</th>
+            <th style="padding:0.5rem 0.75rem;">User Agent</th>
+          </tr>
+        </thead>
+        <tbody id="visits-body"></tbody>
+      </table>
+    </div>
+    <div id="visits-pagination" style="display:flex;gap:0.5rem;margin-top:1rem;align-items:center;"></div>
+    <p class="msg" id="visits-msg"></p>
+  </section>
+
+  <!-- INBOX SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-inbox"></i>
+      <span>Messages Inbox</span>
+      <span id="unread-badge" style="background:#e8622a;color:#fff;font-size:0.75rem;padding:0.2rem 0.6rem;border-radius:100px;margin-left:auto;"></span>
+    </div>
+    <div id="inbox-wrap"></div>
+    <p class="msg" id="inbox-msg"></p>
+  </section>
+
+  <!-- SKILLS SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-chart-bar"></i>
+      <span>Skills & Tools</span>
+    </div>
+    <div id="skills-wrap" style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem;"></div>
+    <div class="add-section">
+      <div class="form-grid">
+        <div class="field"><label>Skill / Tool Name</label><input id="sk-name" placeholder="e.g. Houdini" /></div>
+        <div class="field">
+          <label>Proficiency: <span id="sk-level-display">85</span>%</label>
+          <input id="sk-level" type="range" min="1" max="100" value="85"
+            oninput="document.getElementById('sk-level-display').textContent=this.value"
+            style="width:100%;accent-color:#e8622a;" />
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addSkill()">
+        <i class="fas fa-plus-circle"></i> Add Skill
+      </button>
+    </div>
+    <p class="msg" id="skills-msg"></p>
+  </section>
+
+  <!-- ABOUT SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-user-circle"></i>
+      <span>About</span>
+      <label style="margin-left:auto;display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.85rem;font-weight:600;">
+        <span style="color:#888;">Available for Work</span>
+        <div id="avail-toggle" onclick="toggleAvailable()" style="
+          width:44px;height:24px;border-radius:100px;background:#333;position:relative;
+          cursor:pointer;transition:background 0.3s;flex-shrink:0;">
+          <div id="avail-knob" style="
+            width:18px;height:18px;border-radius:50%;background:#fff;
+            position:absolute;top:3px;left:3px;
+            transition:transform 0.3s;"></div>
+        </div>
+      </label>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label><i class="fas fa-tag"></i> Hero Tag</label>
+        <input id="a-hero_tag" placeholder="FX TD @ DNEG" />
+      </div>
+      <div class="field">
+        <label><i class="fas fa-briefcase"></i> Role Title</label>
+        <input id="a-role" placeholder="FX TD · DNEG" />
+      </div>
+      <div class="field">
+        <label><i class="fas fa-clock"></i> Experience Hours</label>
+        <input id="a-exp_hours" type="number" placeholder="7000" />
+      </div>
+    </div>
+    <div class="field">
+      <label><i class="fas fa-align-left"></i> Hero Description</label>
+      <textarea id="a-hero_desc" rows="3" placeholder="Versatile Visual Effects Artist..."></textarea>
+    </div>
+
+    <div style="margin-top: 1.5rem;">
+      <div class="section-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-id-card"></i>
+        <span>About Cards</span>
+      </div>
+      <div id="about-cards-wrap" class="cards-grid"></div>
+    </div>
+
+    <div class="field">
+      <button class="btn btn-primary" onclick="saveAbout()">
+        <i class="fas fa-save"></i> Save All Changes
+      </button>
+    </div>
+    <p class="msg" id="about-msg"></p>
+  </section>
+
+  <!-- CREDITS SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-trophy"></i>
+      <span>Featured Credits</span>
+      <span style="font-size:0.75rem;color:#888;margin-left:auto;">Drag cards to reorder</span>
+    </div>
+    <div id="credits-wrap" class="cards-grid"></div>
+    <div class="add-section">
+      <div class="form-grid">
+        <div class="field">
+          <label><i class="fas fa-plus-circle"></i> New Category</label>
+          <input id="new-cat-name" placeholder="e.g., Web Series, Documentaries" />
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="addCategory()">
+        <i class="fas fa-folder-plus"></i> Add Category
+      </button>
+    </div>
+    <p class="msg" id="credits-msg"></p>
+  </section>
+
+  <!-- WORK SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-briefcase"></i>
+      <span>Personal Work Cards</span>
+      <span style="font-size:0.75rem;color:#888;margin-left:auto;">Drag cards to reorder</span>
+    </div>
+    <div id="work-wrap" class="cards-grid"></div>
+
+    <div class="add-section">
+      <div class="section-title" style="margin-bottom: 1rem;">
+        <i class="fas fa-plus"></i>
+        <span>Add New Work Card</span>
+      </div>
+      <div class="form-grid">
+        <div class="field">
+          <label>Title</label>
+          <input id="w-title" placeholder="Project Title" />
+        </div>
+        <div class="field">
+          <label>Vimeo ID</label>
+          <input id="w-vimeo" placeholder="894517786?h=..." />
+        </div>
+        <div class="field">
+          <label>Thumbnail Path</label>
+          <input id="w-thumb" placeholder="IMAGE/5.jpg or https://..." />
+        </div>
+        <div class="field">
+          <label>Tags (comma separated)</label>
+          <input id="w-tags" placeholder="FX, Houdini, Pyro" />
+        </div>
+        <div class="field">
+          <label>External Link</label>
+          <input id="w-link" placeholder="https://artstation.com/..." />
+        </div>
+      </div>
+      <div class="field">
+        <label>Description</label>
+        <textarea id="w-desc" rows="3" placeholder="Project description..."></textarea>
+      </div>
+      <button class="btn btn-success" onclick="addWork()">
+        <i class="fas fa-plus-circle"></i> Add Work Card
+      </button>
+    </div>
+    <p class="msg" id="work-msg"></p>
+  </section>
+</main>
+
+<script>
+const API = '';
+
+function showMsg(id, text, isErr = false) {
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = `msg ${isErr ? 'error' : 'success'}`;
+  setTimeout(() => {
+    el.className = 'msg';
+    el.textContent = '';
+  }, 4000);
+}
+
+async function api(path, method = 'GET', body = null) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' }, credentials: 'include' };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(API + path, opts);
+  return r.json();
+}
+
+// ABOUT
+let aboutCards = [];
+
+async function loadAbout() {
+  const d = await api('/api/about');
+  document.getElementById('a-hero_tag').value = d.hero_tag || '';
+  document.getElementById('a-hero_desc').value = d.hero_desc || '';
+  document.getElementById('a-role').value = d.role || '';
+  document.getElementById('a-exp_hours').value = d.exp_hours || '';
+  aboutCards = d.cards || [];
+  renderAboutCards();
+}
+
+function renderAboutCards() {
+  const wrap = document.getElementById('about-cards-wrap');
+  wrap.innerHTML = '';
+  aboutCards.forEach((c, i) => {
+    const div = document.createElement('div');
+    div.className = 'admin-card';
+    div.innerHTML = `
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-id-card"></i> Card ${i + 1}</span>
+        <button class="btn btn-danger" onclick="removeAboutCard(${i})">
+          <i class="fas fa-trash"></i> Remove
+        </button>
+      </div>
+      <div class="field" style="margin-bottom: 0.75rem;">
+        <label>Icon Class</label>
+        <input value="${c.icon}" oninput="aboutCards[${i}].icon=this.value" placeholder="fa-regular fa-user" />
+      </div>
+      <div class="field" style="margin-bottom: 0.75rem;">
+        <label>Title</label>
+        <input value="${c.title}" oninput="aboutCards[${i}].title=this.value" />
+      </div>
+      <div class="field">
+        <label>Text</label>
+        <textarea rows="3" oninput="aboutCards[${i}].text=this.value">${c.text}</textarea>
+      </div>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+function removeAboutCard(i) { aboutCards.splice(i, 1); renderAboutCards(); }
+
+async function saveAbout() {
+  const payload = {
+    hero_tag: document.getElementById('a-hero_tag').value,
+    hero_desc: document.getElementById('a-hero_desc').value,
+    role: document.getElementById('a-role').value,
+    exp_hours: parseInt(document.getElementById('a-exp_hours').value) || 0,
+    cards: aboutCards
+  };
+  const r = await api('/api/admin/about', 'POST', payload);
+  showMsg('about-msg', r.error ? '❌ ' + r.error : '✅ All changes saved successfully!', !!r.error);
+}
+
+// CREDITS
+async function loadCredits() {
+  const cats = await api('/api/credits');
+  const wrap = document.getElementById('credits-wrap');
+  wrap.innerHTML = '';
+  cats.forEach(cat => wrap.appendChild(buildCatCard(cat)));
+  enableDrag('credits-wrap', '/api/admin/credits/reorder');
+}
+
+function buildCatCard(cat) {
+  const div = document.createElement('div');
+  div.className = 'admin-card';
+  div.id = 'cat-' + cat._id;
+  div.setAttribute('draggable', 'true');
+  div.dataset.id = cat._id;
+
+  let videosHtml = (cat.videos || []).map((v, i) => `
+    <div class="video-row">
+      <input value="${escapeHtml(v.embed)}" placeholder="Embed URL" id="ve-${cat._id}-${i}" />
+      <input value="${escapeHtml(v.caption)}" placeholder="Caption" id="vc-${cat._id}-${i}" />
+      <button class="btn btn-danger" onclick="deleteVideo('${cat._id}',${i})" style="padding: 0.5rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+  `).join('');
+
+  div.innerHTML = `
+    <div class="card-header">
+      <input value="${escapeHtml(cat.category)}" id="cname-${cat._id}" class="card-title" style="background: transparent; border: none; font-weight: 700;" />
+      <div style="display: flex; gap: 0.5rem; align-items:center;">
+        <i class="fas fa-grip-vertical" style="color:#555;cursor:grab;"></i>
+        <button class="btn btn-warning" onclick="renameCategory('${cat._id}')">
+          <i class="fas fa-edit"></i> Rename
+        </button>
+        <button class="btn btn-danger" onclick="deleteCategory('${cat._id}')">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+    <div id="videos-${cat._id}">${videosHtml || '<p style="color:#666; font-size:0.8rem;">No videos yet</p>'}</div>
+    <div class="video-row" style="margin-top: 1rem;">
+      <input id="ne-${cat._id}" placeholder="New embed URL" />
+      <input id="nc-${cat._id}" placeholder="Caption" />
+      <button class="btn btn-success" onclick="addVideo('${cat._id}')" style="white-space: nowrap;">
+        <i class="fas fa-plus"></i> Add Video
+      </button>
+    </div>
+  `;
+  return div;
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/[&<>]/g, function(m) {
+    if (m === '&') return '&amp;';
+    if (m === '<') return '&lt;';
+    if (m === '>') return '&gt;';
+    return m;
+  }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+    return c;
+  });
+}
+
+async function renameCategory(id) {
+  const name = document.getElementById('cname-' + id).value.trim();
+  if (!name) return showMsg('credits-msg', 'Category name required', true);
+  const r = await api(`/api/admin/credits/${id}`, 'PUT', { category: name });
+  showMsg('credits-msg', r.error ? '❌ ' + r.error : '✅ Category renamed', !!r.error);
+}
+
+async function deleteCategory(id) {
+  if (!confirm('Delete this entire category? All videos will be lost.')) return;
+  await api(`/api/admin/credits/${id}`, 'DELETE');
+  document.getElementById('cat-' + id)?.remove();
+  showMsg('credits-msg', '✅ Category deleted');
+}
+
+async function addVideo(catId) {
+  const embed = document.getElementById('ne-' + catId).value.trim();
+  const caption = document.getElementById('nc-' + catId).value.trim();
+  if (!embed || !caption) {
+    return showMsg('credits-msg', 'Both embed URL and caption are required', true);
+  }
+  const r = await api(`/api/admin/credits/${catId}/videos`, 'POST', { embed, caption });
+  if (r.error) { showMsg('credits-msg', r.error, true); return; }
+  showMsg('credits-msg', '✅ Video added');
+  loadCredits();
+}
+
+async function deleteVideo(catId, idx) {
+  await api(`/api/admin/credits/${catId}/videos/${idx}`, 'DELETE');
+  showMsg('credits-msg', '✅ Video removed');
+  loadCredits();
+}
+
+async function addCategory() {
+  const name = document.getElementById('new-cat-name').value.trim();
+  if (!name) return showMsg('credits-msg', 'Category name required', true);
+  const r = await api('/api/admin/credits', 'POST', { category: name });
+  if (r.error) { showMsg('credits-msg', r.error, true); return; }
+  document.getElementById('new-cat-name').value = '';
+  showMsg('credits-msg', '✅ Category created');
+  loadCredits();
+}
+
+// WORK
+async function loadWork() {
+  const items = await api('/api/work');
+  const wrap = document.getElementById('work-wrap');
+  wrap.innerHTML = '';
+  items.forEach(w => wrap.appendChild(buildWorkCard(w)));
+  enableDrag('work-wrap', '/api/admin/work/reorder');
+}
+
+function buildWorkCard(w) {
+  const div = document.createElement('div');
+  div.className = 'admin-card';
+  div.id = 'work-' + w._id;
+  div.setAttribute('draggable', 'true');
+  div.dataset.id = w._id;
+  div.innerHTML = `
+    <div class="card-header">
+      <span class="card-title"><i class="fas fa-grip-vertical" style="color:#555;margin-right:0.5rem;cursor:grab;"></i><i class="fas fa-play-circle"></i> ${w.num} — ${escapeHtml(w.title)}</span>
+      <div style="display:flex;align-items:center;gap:0.75rem;">
+        <span style="font-size:0.75rem;color:#888;"><i class="fas fa-eye"></i> ${w.views || 0} views</span>
+        <button class="btn btn-danger" onclick="deleteWork('${w._id}')">
+          <i class="fas fa-trash"></i> Delete
+        </button>
+      </div>
+    </div>
+    <div class="form-grid" style="margin-top: 1rem;">
+      <div class="field"><label>Title</label><input id="wt-${w._id}" value="${escapeHtml(w.title)}" /></div>
+      <div class="field"><label>Vimeo ID</label><input id="wv-${w._id}" value="${escapeHtml(w.vimeo)}" /></div>
+      <div class="field"><label>Thumbnail</label><input id="wth-${w._id}" value="${escapeHtml(w.thumb)}" /></div>
+      <div class="field"><label>Tags</label><input id="wtg-${w._id}" value="${(w.tags || []).join(', ')}" /></div>
+      <div class="field"><label>Link</label><input id="wl-${w._id}" value="${escapeHtml(w.link || '')}" /></div>
+    </div>
+    <div class="field"><label>Description</label><textarea id="wd-${w._id}" rows="3">${escapeHtml(w.desc)}</textarea></div>
+    <button class="btn btn-primary" onclick="updateWork('${w._id}')" style="margin-top: 1rem;">
+      <i class="fas fa-save"></i> Save Changes
+    </button>
+  `;
+  return div;
+}
+
+async function updateWork(id) {
+  const payload = {
+    title: document.getElementById('wt-' + id).value,
+    vimeo: document.getElementById('wv-' + id).value,
+    thumb: document.getElementById('wth-' + id).value,
+    desc: document.getElementById('wd-' + id).value,
+    tags: document.getElementById('wtg-' + id).value.split(',').map(t => t.trim()).filter(Boolean),
+    link: document.getElementById('wl-' + id).value,
+  };
+  const r = await api(`/api/admin/work/${id}`, 'PUT', payload);
+  showMsg('work-msg', r.error ? '❌ ' + r.error : '✅ Work card updated', !!r.error);
+}
+
+async function deleteWork(id) {
+  if (!confirm('Delete this work card?')) return;
+  await api(`/api/admin/work/${id}`, 'DELETE');
+  document.getElementById('work-' + id)?.remove();
+  showMsg('work-msg', '✅ Work card deleted');
+}
+
+async function addWork() {
+  const tags = document.getElementById('w-tags').value.split(',').map(t => t.trim()).filter(Boolean);
+  const payload = {
+    title: document.getElementById('w-title').value,
+    vimeo: document.getElementById('w-vimeo').value,
+    thumb: document.getElementById('w-thumb').value,
+    desc: document.getElementById('w-desc').value,
+    tags,
+    link: document.getElementById('w-link').value
+  };
+  if (!payload.title || !payload.vimeo || !payload.thumb || !payload.desc) {
+    return showMsg('work-msg', 'Title, Vimeo ID, Thumbnail, and Description are required', true);
+  }
+  const r = await api('/api/admin/work', 'POST', payload);
+  if (r.error) { showMsg('work-msg', r.error, true); return; }
+  showMsg('work-msg', '✅ Work card added successfully!');
+  ['w-title', 'w-vimeo', 'w-thumb', 'w-desc', 'w-tags', 'w-link'].forEach(id => document.getElementById(id).value = '');
+  loadWork();
+}
+
+// VISITS
+let visitsPage = 1;
+
+async function loadVisitStats() {
+  const s = await api('/api/admin/visits/stats');
+  const wrap = document.getElementById('visit-stats');
+  const items = [
+    { label: 'Total Visits', val: s.total, icon: 'fa-eye' },
+    { label: 'Today', val: s.today, icon: 'fa-calendar-day' },
+    { label: 'This Week', val: s.week, icon: 'fa-calendar-week' },
+    { label: 'Unique IPs', val: s.unique_ips, icon: 'fa-fingerprint' },
+  ];
+  wrap.innerHTML = items.map(i => `
+    <div style="background:rgba(15,15,20,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;text-align:center;">
+      <i class="fas ${i.icon}" style="color:#e8622a;font-size:1.3rem;"></i>
+      <div style="font-size:1.6rem;font-weight:700;margin:0.4rem 0;">${i.val ?? 0}</div>
+      <div style="font-size:0.72rem;color:#888;letter-spacing:1px;text-transform:uppercase;">${i.label}</div>
+    </div>
+  `).join('');
+}
+
+async function loadVisits(page = 1) {
+  visitsPage = page;
+  const data = await api(`/api/admin/visits?page=${page}`);
+  const tbody = document.getElementById('visits-body');
+  tbody.innerHTML = data.visits.length ? data.visits.map(v => `
+    <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
+      <td style="padding:0.5rem 0.75rem;color:#aaa;white-space:nowrap;">${v.ts}</td>
+      <td style="padding:0.5rem 0.75rem;">
+        ${v.name
+          ? `<span style="color:#4ade80;font-weight:600;"><i class="fas fa-user" style="font-size:0.7rem;margin-right:0.3rem;"></i>${escapeHtml(v.name)}</span>`
+          : `<span style="color:#555;font-size:0.75rem;">anonymous</span>`}
+      </td>
+      <td style="padding:0.5rem 0.75rem;color:#e8622a;font-family:monospace;font-size:0.8rem;">${escapeHtml(v.ip)}</td>
+      <td style="padding:0.5rem 0.75rem;color:#fff;">${escapeHtml(v.path)}</td>
+      <td style="padding:0.5rem 0.75rem;color:#60a5fa;font-size:0.75rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(v.referrer||'')}">${v.referrer ? escapeHtml(v.referrer) : '<span style="color:#444;">direct</span>'}</td>
+      <td style="padding:0.5rem 0.75rem;color:#666;font-size:0.75rem;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${escapeHtml(v.ua)}">${escapeHtml(v.ua)}</td>
+    </tr>
+  `).join('') : '<tr><td colspan="6" style="padding:1rem;color:#666;">No visits logged yet.</td></tr>';
+
+  const pag = document.getElementById('visits-pagination');
+  pag.innerHTML = '';
+  if (data.pages > 1) {
+    for (let p = 1; p <= data.pages; p++) {
+      const btn = document.createElement('button');
+      btn.className = 'btn ' + (p === page ? 'btn-primary' : 'btn-warning');
+      btn.style.padding = '0.4rem 0.8rem';
+      btn.textContent = p;
+      btn.onclick = () => loadVisits(p);
+      pag.appendChild(btn);
+    }
+    const info = document.createElement('span');
+    info.style.cssText = 'color:#888;font-size:0.8rem;margin-left:0.5rem;';
+    info.textContent = `${data.total} total`;
+    pag.appendChild(info);
+  }
+}
+
+async function clearVisits() {
+  if (!confirm('Clear all visitor logs?')) return;
+  await api('/api/admin/visits', 'DELETE');
+  showMsg('visits-msg', '✅ Visitor logs cleared');
+  loadVisitStats();
+  loadVisits(1);
+}
+
+// SKILLS
+let availableState = false;
+
+async function loadAvailable() {
+  const d = await api('/api/about');
+  availableState = !!d.available;
+  const toggle = document.getElementById('avail-toggle');
+  const knob   = document.getElementById('avail-knob');
+  toggle.style.background = availableState ? '#4ade80' : '#333';
+  knob.style.transform    = availableState ? 'translateX(20px)' : 'translateX(0)';
+}
+
+async function toggleAvailable() {
+  availableState = !availableState;
+  await api('/api/admin/available', 'POST', { available: availableState });
+  const toggle = document.getElementById('avail-toggle');
+  const knob   = document.getElementById('avail-knob');
+  toggle.style.background = availableState ? '#4ade80' : '#333';
+  knob.style.transform    = availableState ? 'translateX(20px)' : 'translateX(0)';
+}
+
+async function loadSkills() {
+  const skills = await api('/api/skills');
+  const wrap = document.getElementById('skills-wrap');
+  if (!skills.length) { wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No skills yet.</p>'; return; }
+  wrap.innerHTML = skills.map(s => `
+    <div style="display:flex;align-items:center;gap:0.75rem;background:rgba(15,15,20,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.75rem 1rem;">
+      <span style="flex:1;font-size:0.9rem;color:#fff;font-weight:600;">${escapeHtml(s.name)}</span>
+      <div style="flex:2;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
+        <div style="width:${s.level}%;height:100%;background:linear-gradient(90deg,#e8622a,#ff9a5c);border-radius:2px;"></div>
+      </div>
+      <span style="font-size:0.85rem;color:#e8622a;font-weight:700;width:36px;text-align:right;">${s.level}%</span>
+      <button class="btn btn-danger" onclick="deleteSkill('${s._id}')" style="padding:0.35rem 0.6rem;font-size:0.75rem;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>`).join('');
+}
+
+async function addSkill() {
+  const name  = document.getElementById('sk-name').value.trim();
+  const level = parseInt(document.getElementById('sk-level').value);
+  if (!name) return showMsg('skills-msg', 'Skill name required', true);
+  const r = await api('/api/admin/skills', 'POST', { name, level });
+  if (r.error) return showMsg('skills-msg', r.error, true);
+  document.getElementById('sk-name').value = '';
+  showMsg('skills-msg', '✅ Skill added');
+  loadSkills();
+}
+
+async function deleteSkill(id) {
+  await api(`/api/admin/skills/${id}`, 'DELETE');
+  showMsg('skills-msg', '✅ Skill removed');
+  loadSkills();
+}
+
+// INBOX
+async function loadInbox() {
+  const msgs = await api('/api/admin/messages');
+  const wrap = document.getElementById('inbox-wrap');
+  const badge = document.getElementById('unread-badge');
+  const unread = msgs.filter(m => !m.read).length;
+  badge.textContent = unread ? `${unread} unread` : '';
+  if (!msgs.length) { wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No messages yet.</p>'; return; }
+  wrap.innerHTML = '';
+  msgs.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'admin-card';
+    div.style.opacity = m.read ? '0.5' : '1';
+    div.id = 'msg-' + m._id;
+    div.innerHTML = `
+      <div class="card-header">
+        <div>
+          <div class="card-title" style="color:${m.read ? '#888' : '#e8622a'}">${escapeHtml(m.name)} ${m.read ? '(read)' : '<span style="font-size:0.7rem;background:#e8622a;color:#fff;padding:0.1rem 0.5rem;border-radius:100px;">NEW</span>'}</div>
+          <div style="font-size:0.8rem;color:#888;margin-top:0.3rem;">${escapeHtml(m.email)} &bull; ${m.date}</div>
+        </div>
+        <div style="display:flex;gap:0.5rem;">
+          ${!m.read ? `<button class="btn btn-warning" onclick="markRead('${m._id}')"><i class="fas fa-check"></i> Mark Read</button>` : ''}
+          <button class="btn btn-danger" onclick="deleteMsg('${m._id}')"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <p style="font-size:0.9rem;color:#ccc;margin-top:0.5rem;line-height:1.6;">${escapeHtml(m.message)}</p>
+    `;
+    wrap.appendChild(div);
+  });
+}
+
+async function markRead(id) {
+  await api(`/api/admin/messages/${id}/read`, 'POST');
+  loadInbox();
+}
+
+async function deleteMsg(id) {
+  if (!confirm('Delete this message?')) return;
+  await api(`/api/admin/messages/${id}`, 'DELETE');
+  document.getElementById('msg-' + id)?.remove();
+  showMsg('inbox-msg', 'Message deleted');
+}
+
+// DRAG TO REORDER
+function enableDrag(containerId, saveUrl) {
+  const container = document.getElementById(containerId);
+  let dragged = null;
+  container.addEventListener('dragstart', e => {
+    dragged = e.target.closest('[draggable]');
+    setTimeout(() => dragged && (dragged.style.opacity = '0.4'), 0);
+  });
+  container.addEventListener('dragend', e => {
+    if (dragged) dragged.style.opacity = '1';
+    dragged = null;
+    saveOrder(containerId, saveUrl);
+  });
+  container.addEventListener('dragover', e => {
+    e.preventDefault();
+    const target = e.target.closest('[draggable]');
+    if (target && target !== dragged) {
+      const rect = target.getBoundingClientRect();
+      const after = e.clientY > rect.top + rect.height / 2;
+      container.insertBefore(dragged, after ? target.nextSibling : target);
+    }
+  });
+}
+
+function saveOrder(containerId, saveUrl) {
+  const container = document.getElementById(containerId);
+  const items = [...container.querySelectorAll('[draggable]')];
+  const order = items.map((el, i) => ({ id: el.dataset.id, order: i }));
+  api(saveUrl, 'POST', { order });
+}
+
+// Initialize — must be last, after all functions are defined
+loadAbout();
+loadAvailable();
+loadSkills();
+loadCredits();
+loadWork();
+loadInbox();
+loadVisitStats();
+loadVisits();
+
+</script>
+</body>
+</html>
