@@ -502,6 +502,10 @@
         <label><i class="fas fa-clock"></i> Experience Hours</label>
         <input id="a-exp_hours" type="number" placeholder="7000" />
       </div>
+      <div class="field">
+        <label><i class="fas fa-image"></i> Profile Photo URL</label>
+        <input id="a-profile_url" placeholder="https://example.com/photo.jpg" />
+      </div>
     </div>
     <div class="field">
       <label><i class="fas fa-align-left"></i> Hero Description</label>
@@ -623,6 +627,7 @@ async function loadAbout() {
   document.getElementById('a-hero_desc').value = d.hero_desc || '';
   document.getElementById('a-role').value = d.role || '';
   document.getElementById('a-exp_hours').value = d.exp_hours || '';
+  document.getElementById('a-profile_url').value = d.profile_url || '';
   aboutCards = d.cards || [];
   renderAboutCards();
 }
@@ -665,6 +670,7 @@ async function saveAbout() {
     hero_desc: document.getElementById('a-hero_desc').value,
     role: document.getElementById('a-role').value,
     exp_hours: parseInt(document.getElementById('a-exp_hours').value) || 0,
+    profile_url: document.getElementById('a-profile_url').value.trim(),
     cards: aboutCards
   };
   const r = await api('/api/admin/about', 'POST', payload);

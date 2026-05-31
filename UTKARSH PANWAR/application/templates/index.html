@@ -321,6 +321,9 @@
         const badge = document.getElementById('available-badge');
         if (d.available) badge.classList.remove('hidden');
         else badge.classList.add('hidden');
+        if (d.profile_url) {
+          document.getElementById('profile').style.backgroundImage = `url('${d.profile_url}')`;
+        }
         if (d.cards && d.cards.length) {
           const wrap = document.getElementById('about-cards');
           wrap.innerHTML = d.cards.map(c => `
