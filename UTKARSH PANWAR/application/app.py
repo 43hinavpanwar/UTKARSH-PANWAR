@@ -189,6 +189,8 @@ migrate()
 
 # ── VISITOR LOGGING ───────────────────────────────────────────────────────────
 SKIP_PATHS = {'/static', '/api', '/favicon'}
+SKIP_UA    = {'Mozilla/5.0+(compatible; UptimeRobot/2.0; http://www.uptimerobot.com/)'}
+BOT_FILTER = {'ua': {'$nin': list(SKIP_UA)}}
 
 @app.before_request
 def log_visit():
@@ -196,6 +198,8 @@ def log_visit():
         return
     path = request.path
     if any(path.startswith(p) for p in SKIP_PATHS):
+        return
+    if request.headers.get('User-Agent', '') in SKIP_UA:
         return
     visitor_name = sanitize(request.cookies.get('utk_vname') or '', max_len=80)
     referrer     = sanitize(request.headers.get('Referer') or '', max_len=300)
@@ -215,8 +219,8 @@ def get_visits():
         return jsonify([]), 500
     page     = max(1, int(request.args.get('page', 1)))
     per_page = 50
-    total    = visits_col.count_documents({})
-    docs     = list(visits_col.find({}).sort('ts', -1).skip((page - 1) * per_page).limit(per_page))
+    total    = visits_col.count_documents(BOT_FILTER)
+    docs     = list(visits_col.find(BOT_FILTER).sort('ts', -1).skip((page - 1) * per_page).limit(per_page))
     for d in docs:
         d['_id'] = str(d['_id'])
         d['ts']  = d['ts'].strftime('%d %b %Y, %H:%M:%S') if d.get('ts') else ''
@@ -227,15 +231,16 @@ def get_visits():
 def visit_stats():
     if visits_col is None:
         return jsonify({}), 500
-    total      = visits_col.count_documents({})
+    total      = visits_col.count_documents(BOT_FILTER)
     today      = datetime.now(timezone.utc).replace(hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone.utc)
-    today_count = visits_col.count_documents({'ts': {'$gte': today}})
-    week_count  = visits_col.count_documents({'ts': {'$gte': today - timedelta(days=7)}})
+    today_count = visits_col.count_documents({**BOT_FILTER, 'ts': {'$gte': today}})
+    week_count  = visits_col.count_documents({**BOT_FILTER, 'ts': {'$gte': today - timedelta(days=7)}})
     top_pages   = list(visits_col.aggregate([
+        {'$match': BOT_FILTER},
         {'$group': {'_id': '$path', 'count': {'$sum': 1}}},
         {'$sort': {'count': -1}}, {'$limit': 5}
     ]))
-    unique_ips  = len(visits_col.distinct('ip'))
+    unique_ips  = len(visits_col.distinct('ip', BOT_FILTER))
     return jsonify({'total': total, 'today': today_count, 'week': week_count,
                     'unique_ips': unique_ips, 'top_pages': top_pages})
 
