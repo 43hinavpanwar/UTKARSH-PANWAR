@@ -578,6 +578,18 @@
         <label><i class="fas fa-image"></i> Profile Photo URL</label>
         <input id="a-profile_url" placeholder="https://example.com/photo.jpg" />
       </div>
+      <div class="field">
+        <label><i class="fas fa-map-marker-alt"></i> City Name</label>
+        <input id="a-loc-city" placeholder="e.g. Mumbai" />
+      </div>
+      <div class="field">
+        <label><i class="fas fa-globe"></i> Latitude</label>
+        <input id="a-loc-lat" placeholder="e.g. 19.0760" type="number" step="any" />
+      </div>
+      <div class="field">
+        <label><i class="fas fa-globe"></i> Longitude</label>
+        <input id="a-loc-lon" placeholder="e.g. 72.8777" type="number" step="any" />
+      </div>
     </div>
     <div class="field">
       <label><i class="fas fa-align-left"></i> Hero Description</label>
@@ -700,6 +712,10 @@ async function loadAbout() {
   document.getElementById('a-role').value = d.role || '';
   document.getElementById('a-exp_hours').value = d.exp_hours || '';
   document.getElementById('a-profile_url').value = d.profile_url || '';
+  const loc = d.location || {};
+  document.getElementById('a-loc-city').value = loc.city || '';
+  document.getElementById('a-loc-lat').value  = loc.lat  || '';
+  document.getElementById('a-loc-lon').value  = loc.lon  || '';
   aboutCards = d.cards || [];
   renderAboutCards();
 }
@@ -743,6 +759,11 @@ async function saveAbout() {
     role: document.getElementById('a-role').value,
     exp_hours: parseInt(document.getElementById('a-exp_hours').value) || 0,
     profile_url: document.getElementById('a-profile_url').value.trim(),
+    location: {
+      city: document.getElementById('a-loc-city').value.trim(),
+      lat:  parseFloat(document.getElementById('a-loc-lat').value) || null,
+      lon:  parseFloat(document.getElementById('a-loc-lon').value) || null,
+    },
     cards: aboutCards
   };
   const r = await api('/api/admin/about', 'POST', payload);

@@ -326,7 +326,7 @@ def update_about():
     if about_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
     data    = request.json or {}
-    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url'}
+    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location'}
     update  = {k: v for k, v in data.items() if k in allowed}
     if not update:
         return jsonify({'error': 'Nothing to update'}), 400
@@ -602,6 +602,34 @@ def set_theme():
     theme = 'day' if (request.json or {}).get('day') else 'dark'
     about_col.update_one({'_id': 'about'}, {'$set': {'theme': theme}}, upsert=True)
     return jsonify({'status': 'updated', 'theme': theme})
+
+@app.route('/api/weather')
+def get_weather():
+    if about_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    doc = about_col.find_one({'_id': 'about'}, {'location': 1}) or {}
+    loc = doc.get('location', {})
+    lat, lon = loc.get('lat'), loc.get('lon')
+    if not lat or not lon:
+        return jsonify({'error': 'no location set'}), 404
+    try:
+        import urllib.request, json as _json
+        url = (f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}'
+               '&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m'
+               '&temperature_unit=celsius&windspeed_unit=kmh&timezone=auto')
+        with urllib.request.urlopen(url, timeout=5) as resp:
+            data = _json.loads(resp.read())
+        cur = data['current']
+        return jsonify({
+            'city':     loc.get('city', ''),
+            'temp':     cur['temperature_2m'],
+            'code':     cur['weathercode'],
+            'wind':     cur['windspeed_10m'],
+            'humidity': cur['relativehumidity_2m'],
+            'timezone': data.get('timezone', ''),
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 502
 
 # ── PUBLIC READ APIs ──────────────────────────────────────────────────────────
 @app.route('/api/about')

@@ -190,6 +190,29 @@
       {% endfor %}
     </section>
 
+    <!-- LOCATION & WEATHER -->
+    <section id="S_location">
+      <div class="section-label reveal">LOCATION</div>
+      <h2 class="section-heading reveal">Currently <em>Based In</em></h2>
+      <div id="location-card" class="reveal">
+        <div id="loc-left">
+          <div id="loc-city-name"></div>
+          <div id="loc-timezone"></div>
+        </div>
+        <div id="loc-divider"></div>
+        <div id="loc-right">
+          <div id="loc-weather-main">
+            <span id="loc-weather-icon"></span>
+            <span id="loc-temp"></span>
+          </div>
+          <div id="loc-weather-details">
+            <div class="loc-detail"><i class="fas fa-wind"></i><span id="loc-wind"></span></div>
+            <div class="loc-detail"><i class="fas fa-droplet"></i><span id="loc-humidity"></span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- CONTACT -->
     <section id="S5">
       <div class="section-label reveal">CONTACT</div>
@@ -278,6 +301,38 @@
 
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <script>
+    async function syncLocation() {
+      try {
+        const w = await fetch('/api/weather').then(r => r.json());
+        if (w.error) { document.getElementById('S_location').style.display = 'none'; return; }
+        const icons = {
+          0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
+          45:'🌫️', 48:'🌫️',
+          51:'🌦️', 53:'🌦️', 55:'🌧️',
+          61:'🌧️', 63:'🌧️', 65:'🌧️',
+          71:'🌨️', 73:'🌨️', 75:'❄️',
+          80:'🌦️', 81:'🌧️', 82:'⛈️',
+          95:'⛈️', 96:'⛈️', 99:'⛈️',
+        };
+        const descs = {
+          0:'Clear Sky', 1:'Mainly Clear', 2:'Partly Cloudy', 3:'Overcast',
+          45:'Foggy', 48:'Foggy',
+          51:'Light Drizzle', 53:'Drizzle', 55:'Heavy Drizzle',
+          61:'Light Rain', 63:'Rain', 65:'Heavy Rain',
+          71:'Light Snow', 73:'Snow', 75:'Heavy Snow',
+          80:'Showers', 81:'Heavy Showers', 82:'Violent Showers',
+          95:'Thunderstorm', 96:'Thunderstorm', 99:'Thunderstorm',
+        };
+        const code = w.code;
+        document.getElementById('loc-city-name').textContent = w.city;
+        document.getElementById('loc-timezone').textContent  = w.timezone.replace('_', ' ');
+        document.getElementById('loc-weather-icon').textContent = icons[code] ?? '🌡️';
+        document.getElementById('loc-temp').textContent     = `${Math.round(w.temp)}°C  ${descs[code] ?? ''}`;
+        document.getElementById('loc-wind').textContent     = `${w.wind} km/h`;
+        document.getElementById('loc-humidity').textContent = `${w.humidity}%`;
+      } catch(e) { document.getElementById('S_location').style.display = 'none'; }
+    }
+
     // ── BACK TO TOP ────────────────────────────────────────────────────────────
     const btt = document.getElementById('back-to-top');
     window.addEventListener('scroll', () => btt.classList.toggle('visible', window.scrollY > 400));
@@ -465,6 +520,7 @@
     syncSkills();
     syncWork();
     syncCredits();
+    syncLocation();
 
     // ── VISITOR NAME PROMPT ────────────────────────────────────────────────────
     (function () {

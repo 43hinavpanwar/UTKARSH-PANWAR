@@ -805,6 +805,79 @@ section { padding: clamp(6rem, 8vw, 10rem) 5%; }
   .btn-primary, .btn-ghost { padding: 1.2rem 2rem; font-size: 1.15rem; }
 }
 
+/* ── LOCATION & WEATHER SECTION ─────────────────────────────────────────── */
+#S_location { background: var(--surface); }
+
+#location-card {
+  display: flex;
+  align-items: center;
+  gap: 4rem;
+  max-width: 860px;
+  margin: 0 auto;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: clamp(3rem, 5vw, 5rem) clamp(3rem, 6vw, 6rem);
+  transition: border-color 0.3s;
+}
+#location-card:hover { border-color: rgba(232,98,42,0.35); }
+
+#loc-left { flex: 1; }
+#loc-city-name {
+  font-family: var(--font2);
+  font-size: clamp(3rem, 5vw, 5rem);
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+#loc-timezone {
+  font-size: 1.3rem;
+  color: var(--muted);
+  margin-top: 0.8rem;
+  letter-spacing: 0.05em;
+}
+
+#loc-divider {
+  width: 1px;
+  height: 100px;
+  background: var(--border);
+  flex-shrink: 0;
+}
+
+#loc-right { flex: 1; display: flex; flex-direction: column; gap: 2rem; }
+
+#loc-weather-main {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+#loc-weather-icon { font-size: clamp(3.5rem, 5vw, 5rem); line-height: 1; }
+#loc-temp {
+  font-family: var(--font2);
+  font-size: clamp(2rem, 3vw, 2.8rem);
+  font-weight: 700;
+  color: var(--accent);
+}
+
+#loc-weather-details { display: flex; gap: 3rem; }
+.loc-detail {
+  display: flex; align-items: center; gap: 0.8rem;
+  font-size: 1.4rem; color: var(--muted);
+}
+.loc-detail i { color: var(--accent); font-size: 1.2rem; }
+
+@media (max-width: 767px) {
+  #location-card {
+    flex-direction: column;
+    gap: 2.5rem;
+    text-align: center;
+  }
+  #loc-divider { width: 60px; height: 1px; }
+  #loc-weather-main { justify-content: center; }
+  #loc-weather-details { justify-content: center; }
+}
+
 /* ── AVAILABLE BADGE ─────────────────────────────────────────────────────── */
 #available-badge {
   display: inline-flex; align-items: center; gap: 0.7rem;
