@@ -16,6 +16,34 @@
   --font2: 'Space Grotesk', sans-serif;
 }
 
+body.day {
+  --bg: #f4f4f0;
+  --surface: #eaeae4;
+  --surface2: #e0e0d8;
+  --text: #1a1a1a;
+  --muted: #5a5a6a;
+  --border: rgba(0,0,0,0.1);
+  --glow: rgba(232, 98, 42, 0.2);
+}
+
+body.day #header.scrolled {
+  background: rgba(244,244,240,0.92);
+}
+
+body.day #nav-bar {
+  background: transparent;
+}
+
+@media (max-width: 767px) {
+  body.day #nav-bar {
+    background: rgba(244,244,240,0.97);
+  }
+}
+
+body.day #video-overlay {
+  background: linear-gradient(135deg, rgba(244,244,240,0.7) 0%, rgba(244,244,240,0.3) 50%, rgba(244,244,240,0.6) 100%);
+}
+
 html { scroll-behavior: smooth; font-size: 62.5%; }
 
 @media (min-width: 1280px) and (max-width: 1599px) {

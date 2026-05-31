@@ -14,16 +14,50 @@
       box-sizing: border-box;
     }
 
+    /* ── THEME VARIABLES ── */
+    :root {
+      --bg:         linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
+      --text:       #e0e0e0;
+      --header-bg:  rgba(10, 10, 10, 0.95);
+      --section-bg: rgba(20, 20, 25, 0.6);
+      --card-bg:    rgba(15, 15, 20, 0.8);
+      --input-bg:   rgba(10, 10, 12, 0.8);
+      --input-border: rgba(255, 255, 255, 0.1);
+      --input-color: #fff;
+      --label-color: #888;
+      --video-input-bg: rgba(5, 5, 8, 0.8);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --add-border:  rgba(255, 255, 255, 0.05);
+      --scrollbar-track: #1a1a1a;
+    }
+
+    body.day {
+      --bg:         linear-gradient(135deg, #f0f0f0 0%, #e8e8e8 100%);
+      --text:       #1a1a1a;
+      --header-bg:  rgba(255, 255, 255, 0.95);
+      --section-bg: rgba(255, 255, 255, 0.85);
+      --card-bg:    rgba(245, 245, 248, 0.95);
+      --input-bg:   rgba(255, 255, 255, 0.9);
+      --input-border: rgba(0, 0, 0, 0.15);
+      --input-color: #1a1a1a;
+      --label-color: #555;
+      --video-input-bg: rgba(240, 240, 245, 0.9);
+      --card-border: rgba(0, 0, 0, 0.1);
+      --add-border:  rgba(0, 0, 0, 0.08);
+      --scrollbar-track: #ddd;
+    }
+
     body {
-      background: linear-gradient(135deg, #0a0a0a 0%, #0f0f0f 100%);
-      color: #e0e0e0;
+      background: var(--bg);
+      color: var(--text);
       font-family: 'Inter', sans-serif;
       line-height: 1.5;
+      transition: background 0.3s, color 0.3s;
     }
 
     /* Header */
     .admin-header {
-      background: rgba(10, 10, 10, 0.95);
+      background: var(--header-bg);
       backdrop-filter: blur(10px);
       border-bottom: 1px solid rgba(232, 98, 42, 0.2);
       padding: 1rem 2rem;
@@ -35,6 +69,7 @@
       justify-content: space-between;
       flex-wrap: wrap;
       gap: 1rem;
+      transition: background 0.3s;
     }
 
     .logo h1 {
@@ -45,6 +80,12 @@
       -webkit-background-clip: text;
       background-clip: text;
       color: transparent;
+    }
+
+    body.day .logo h1 {
+      background: linear-gradient(135deg, #333 0%, #e8622a 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
     }
 
     .logo span {
@@ -76,6 +117,23 @@
       transform: translateY(-2px);
     }
 
+    /* Theme toggle */
+    .theme-toggle {
+      background: none;
+      border: 1px solid rgba(232, 98, 42, 0.3);
+      border-radius: 8px;
+      padding: 0.6rem 0.9rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: all 0.3s ease;
+      line-height: 1;
+    }
+
+    .theme-toggle:hover {
+      background: rgba(232, 98, 42, 0.1);
+      transform: translateY(-2px);
+    }
+
     /* Main Container */
     .container {
       max-width: 1400px;
@@ -85,9 +143,9 @@
 
     /* Section Styles */
     .section {
-      background: rgba(20, 20, 25, 0.6);
+      background: var(--section-bg);
       backdrop-filter: blur(5px);
-      border: 1px solid rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
       border-radius: 16px;
       padding: 2rem;
       margin-bottom: 2rem;
@@ -135,17 +193,17 @@
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 1px;
-      color: #888;
+      color: var(--label-color);
     }
 
     .field input,
     .field textarea,
     .field select {
-      background: rgba(10, 10, 12, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 8px;
       padding: 0.75rem 1rem;
-      color: #fff;
+      color: var(--input-color);
       font-size: 0.9rem;
       font-family: 'Inter', monospace;
       transition: all 0.3s ease;
@@ -236,8 +294,8 @@
     }
 
     .admin-card {
-      background: rgba(15, 15, 20, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
       border-radius: 12px;
       padding: 1.25rem;
       transition: all 0.3s ease;
@@ -275,11 +333,11 @@
     .video-row input {
       flex: 1;
       min-width: 150px;
-      background: rgba(5, 5, 8, 0.8);
-      border: 1px solid rgba(255, 255, 255, 0.1);
+      background: var(--video-input-bg);
+      border: 1px solid var(--input-border);
       border-radius: 6px;
       padding: 0.5rem 0.75rem;
-      color: #fff;
+      color: var(--input-color);
       font-size: 0.8rem;
     }
 
@@ -310,7 +368,7 @@
     .add-section {
       margin-top: 1.5rem;
       padding-top: 1.5rem;
-      border-top: 1px solid rgba(255, 255, 255, 0.05);
+      border-top: 1px solid var(--add-border);
     }
 
     /* Responsive */
@@ -382,7 +440,7 @@
     }
 
     ::-webkit-scrollbar-track {
-      background: #1a1a1a;
+      background: var(--scrollbar-track);
     }
 
     ::-webkit-scrollbar-thumb {
@@ -401,10 +459,13 @@
   <div class="logo">
     <h1>UTK</h1>
   </div>
-  <a href="/logout" class="logout-btn">
-    <i class="fas fa-sign-out-alt"></i>
-    Logout
-  </a>
+  <div style="display:flex;align-items:center;gap:0.75rem;">
+    <button class="theme-toggle" id="theme-toggle" onclick="toggleTheme()" title="Toggle day/dark mode">🌙</button>
+    <a href="/logout" class="logout-btn">
+      <i class="fas fa-sign-out-alt"></i>
+      Logout
+    </a>
+  </div>
 </header>
 
 <main class="container">
@@ -483,6 +544,17 @@
           width:44px;height:24px;border-radius:100px;background:#333;position:relative;
           cursor:pointer;transition:background 0.3s;flex-shrink:0;">
           <div id="avail-knob" style="
+            width:18px;height:18px;border-radius:50%;background:#fff;
+            position:absolute;top:3px;left:3px;
+            transition:transform 0.3s;"></div>
+        </div>
+      </label>
+      <label style="display:flex;align-items:center;gap:0.6rem;cursor:pointer;font-size:0.85rem;font-weight:600;">
+        <span style="color:#888;">Site Day Mode</span>
+        <div id="theme-site-toggle" onclick="toggleSiteTheme()" style="
+          width:44px;height:24px;border-radius:100px;background:#333;position:relative;
+          cursor:pointer;transition:background 0.3s;flex-shrink:0;">
+          <div id="theme-site-knob" style="
             width:18px;height:18px;border-radius:50%;background:#fff;
             position:absolute;top:3px;left:3px;
             transition:transform 0.3s;"></div>
@@ -938,6 +1010,23 @@ async function loadAvailable() {
   const knob   = document.getElementById('avail-knob');
   toggle.style.background = availableState ? '#4ade80' : '#333';
   knob.style.transform    = availableState ? 'translateX(20px)' : 'translateX(0)';
+
+  siteThemeDay = d.theme === 'day';
+  const st = document.getElementById('theme-site-toggle');
+  const sk = document.getElementById('theme-site-knob');
+  st.style.background = siteThemeDay ? '#e8622a' : '#333';
+  sk.style.transform  = siteThemeDay ? 'translateX(20px)' : 'translateX(0)';
+}
+
+let siteThemeDay = false;
+
+async function toggleSiteTheme() {
+  siteThemeDay = !siteThemeDay;
+  await api('/api/admin/theme', 'POST', { day: siteThemeDay });
+  const st = document.getElementById('theme-site-toggle');
+  const sk = document.getElementById('theme-site-knob');
+  st.style.background = siteThemeDay ? '#e8622a' : '#333';
+  sk.style.transform  = siteThemeDay ? 'translateX(20px)' : 'translateX(0)';
 }
 
 async function toggleAvailable() {
@@ -1055,6 +1144,22 @@ function saveOrder(containerId, saveUrl) {
   const items = [...container.querySelectorAll('[draggable]')];
   const order = items.map((el, i) => ({ id: el.dataset.id, order: i }));
   api(saveUrl, 'POST', { order });
+}
+
+// THEME
+(function () {
+  const btn = document.getElementById('theme-toggle');
+  if (localStorage.getItem('utk_admin_theme') === 'day') {
+    document.body.classList.add('day');
+    btn.textContent = '☀️';
+  }
+})();
+
+function toggleTheme() {
+  const isDay = document.body.classList.toggle('day');
+  const btn = document.getElementById('theme-toggle');
+  btn.textContent = isDay ? '☀️' : '🌙';
+  localStorage.setItem('utk_admin_theme', isDay ? 'day' : 'dark');
 }
 
 // Initialize — must be last, after all functions are defined

@@ -594,6 +594,15 @@ def set_available():
     about_col.update_one({'_id': 'about'}, {'$set': {'available': val}}, upsert=True)
     return jsonify({'status': 'updated', 'available': val})
 
+@app.route('/api/admin/theme', methods=['POST'])
+@login_required
+def set_theme():
+    if about_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    theme = 'day' if (request.json or {}).get('day') else 'dark'
+    about_col.update_one({'_id': 'about'}, {'$set': {'theme': theme}}, upsert=True)
+    return jsonify({'status': 'updated', 'theme': theme})
+
 # ── PUBLIC READ APIs ──────────────────────────────────────────────────────────
 @app.route('/api/about')
 def get_about():
