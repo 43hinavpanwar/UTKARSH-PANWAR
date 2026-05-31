@@ -612,6 +612,61 @@
     <p class="msg" id="about-msg"></p>
   </section>
 
+  <!-- AWARDS SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-trophy"></i>
+      <span>Awards &amp; Recognition</span>
+    </div>
+    <div id="awards-wrap" style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem;"></div>
+    <div class="add-section">
+      <div class="form-grid">
+        <div class="field"><label>Award Title</label><input id="aw-title" placeholder="Best FX Simulation" /></div>
+        <div class="field"><label>Organisation</label><input id="aw-org" placeholder="Delhi CG Animation Awards" /></div>
+        <div class="field"><label>Year</label><input id="aw-year" placeholder="2023" /></div>
+      </div>
+      <div class="field" style="margin-bottom:1rem;">
+        <label>Description (optional)</label>
+        <textarea id="aw-desc" rows="2" placeholder="Brief description..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="addAward()">
+        <i class="fas fa-plus-circle"></i> Add Award
+      </button>
+    </div>
+    <p class="msg" id="awards-msg"></p>
+  </section>
+
+  <!-- BLOG SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-pen-nib"></i>
+      <span>Blog &amp; Breakdowns</span>
+    </div>
+    <div id="blogs-wrap" class="cards-grid" style="margin-bottom:1.5rem;"></div>
+    <div class="add-section">
+      <div class="section-title" style="margin-bottom:1rem;">
+        <i class="fas fa-plus"></i><span>New Post</span>
+      </div>
+      <div class="form-grid">
+        <div class="field"><label>Title</label><input id="bl-title" placeholder="How I built the fire sim" /></div>
+        <div class="field"><label>Thumbnail URL</label><input id="bl-thumb" placeholder="https://..." /></div>
+        <div class="field"><label>Tags (comma separated)</label><input id="bl-tags" placeholder="Houdini, Pyro, FX" /></div>
+      </div>
+      <div class="field" style="margin-bottom:1rem;">
+        <label>Excerpt (shown on card)</label>
+        <textarea id="bl-excerpt" rows="2" placeholder="Short summary..."></textarea>
+      </div>
+      <div class="field" style="margin-bottom:1rem;">
+        <label>Full Body</label>
+        <textarea id="bl-body" rows="6" placeholder="Full breakdown text..."></textarea>
+      </div>
+      <button class="btn btn-success" onclick="addBlog()">
+        <i class="fas fa-plus-circle"></i> Publish Post
+      </button>
+    </div>
+    <p class="msg" id="blogs-msg"></p>
+  </section>
+
   <!-- CREDITS SECTION -->
   <section class="section">
     <div class="section-title">
@@ -768,6 +823,113 @@ async function saveAbout() {
   };
   const r = await api('/api/admin/about', 'POST', payload);
   showMsg('about-msg', r.error ? '❌ ' + r.error : '✅ All changes saved successfully!', !!r.error);
+}
+
+// AWARDS
+async function loadAwards() {
+  const items = await api('/api/awards');
+  const wrap = document.getElementById('awards-wrap');
+  if (!items.length) { wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No awards yet.</p>'; return; }
+  wrap.innerHTML = items.map(a => `
+    <div style="display:flex;align-items:flex-start;gap:1rem;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:1rem;">
+      <i class="fas fa-trophy" style="color:#e8622a;margin-top:0.2rem;flex-shrink:0;"></i>
+      <div style="flex:1;">
+        <div style="font-weight:700;color:var(--text);">${escapeHtml(a.title)}</div>
+        <div style="font-size:0.8rem;color:#888;margin-top:0.2rem;">${escapeHtml(a.org||'')} ${a.year ? '· ' + a.year : ''}</div>
+        ${a.desc ? `<div style="font-size:0.82rem;color:#aaa;margin-top:0.4rem;">${escapeHtml(a.desc)}</div>` : ''}
+      </div>
+      <button class="btn btn-danger" onclick="deleteAward('${a._id}')" style="padding:0.35rem 0.6rem;font-size:0.75rem;margin-top:0;">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>`).join('');
+}
+
+async function addAward() {
+  const title = document.getElementById('aw-title').value.trim();
+  if (!title) return showMsg('awards-msg', 'Title required', true);
+  const r = await api('/api/admin/awards', 'POST', {
+    title,
+    org:  document.getElementById('aw-org').value.trim(),
+    year: document.getElementById('aw-year').value.trim(),
+    desc: document.getElementById('aw-desc').value.trim(),
+  });
+  if (r.error) return showMsg('awards-msg', r.error, true);
+  ['aw-title','aw-org','aw-year','aw-desc'].forEach(id => document.getElementById(id).value = '');
+  showMsg('awards-msg', '✅ Award added');
+  loadAwards();
+}
+
+async function deleteAward(id) {
+  await api(`/api/admin/awards/${id}`, 'DELETE');
+  showMsg('awards-msg', '✅ Award removed');
+  loadAwards();
+}
+
+// BLOGS
+async function loadBlogs() {
+  const items = await api('/api/blogs');
+  const wrap = document.getElementById('blogs-wrap');
+  if (!items.length) { wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No posts yet.</p>'; return; }
+  wrap.innerHTML = '';
+  items.forEach(b => {
+    const div = document.createElement('div');
+    div.className = 'admin-card';
+    div.id = 'blog-' + b._id;
+    div.innerHTML = `
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-pen-nib"></i> ${escapeHtml(b.title)}</span>
+        <div style="display:flex;gap:0.5rem;align-items:center;">
+          <span style="font-size:0.75rem;color:#888;">${b.date}</span>
+          <button class="btn btn-danger" onclick="deleteBlog('${b._id}')" style="margin-top:0;"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:0.75rem;">
+        <div class="field"><label>Title</label><input id="blt-${b._id}" value="${escapeHtml(b.title)}" /></div>
+        <div class="field"><label>Thumbnail URL</label><input id="blth-${b._id}" value="${escapeHtml(b.thumb||'')}" /></div>
+        <div class="field"><label>Tags</label><input id="bltg-${b._id}" value="${(b.tags||[]).join(', ')}" /></div>
+      </div>
+      <div class="field" style="margin-top:0.75rem;"><label>Excerpt</label><textarea id="ble-${b._id}" rows="2">${escapeHtml(b.excerpt||'')}</textarea></div>
+      <div class="field" style="margin-top:0.75rem;"><label>Body</label><textarea id="blb-${b._id}" rows="5">${escapeHtml(b.body||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="updateBlog('${b._id}')" style="margin-top:0.75rem;">
+        <i class="fas fa-save"></i> Save
+      </button>`;
+    wrap.appendChild(div);
+  });
+}
+
+async function updateBlog(id) {
+  const r = await api(`/api/admin/blogs/${id}`, 'PUT', {
+    title:   document.getElementById('blt-'  + id).value,
+    thumb:   document.getElementById('blth-' + id).value,
+    tags:    document.getElementById('bltg-' + id).value.split(',').map(t => t.trim()).filter(Boolean),
+    excerpt: document.getElementById('ble-'  + id).value,
+    body:    document.getElementById('blb-'  + id).value,
+  });
+  showMsg('blogs-msg', r.error ? '❌ ' + r.error : '✅ Post updated', !!r.error);
+}
+
+async function addBlog() {
+  const title = document.getElementById('bl-title').value.trim();
+  const body  = document.getElementById('bl-body').value.trim();
+  if (!title || !body) return showMsg('blogs-msg', 'Title and body required', true);
+  const r = await api('/api/admin/blogs', 'POST', {
+    title,
+    body,
+    thumb:   document.getElementById('bl-thumb').value.trim(),
+    excerpt: document.getElementById('bl-excerpt').value.trim(),
+    tags:    document.getElementById('bl-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+  });
+  if (r.error) return showMsg('blogs-msg', r.error, true);
+  ['bl-title','bl-thumb','bl-tags','bl-excerpt','bl-body'].forEach(id => document.getElementById(id).value = '');
+  showMsg('blogs-msg', '✅ Post published');
+  loadBlogs();
+}
+
+async function deleteBlog(id) {
+  if (!confirm('Delete this post?')) return;
+  await api(`/api/admin/blogs/${id}`, 'DELETE');
+  document.getElementById('blog-' + id)?.remove();
+  showMsg('blogs-msg', '✅ Post deleted');
 }
 
 // CREDITS
@@ -1187,6 +1349,8 @@ function toggleTheme() {
 loadAbout();
 loadAvailable();
 loadSkills();
+loadAwards();
+loadBlogs();
 loadCredits();
 loadWork();
 loadInbox();

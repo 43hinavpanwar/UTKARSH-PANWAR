@@ -89,10 +89,12 @@ try:
     messages_col = db['messages']
     visits_col   = db['visits']
     skills_col   = db['skills']
+    awards_col   = db['awards']
+    blogs_col    = db['blogs']
     logger.info("✅ MongoDB connected successfully!")
 except Exception as e:
     logger.error(f"❌ MongoDB connection failed: {e}")
-    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = None
+    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = None
 
 atexit.register(lambda: mongo_client.close() if mongo_client is not None else None)
 
@@ -630,6 +632,120 @@ def get_weather():
         })
     except Exception as e:
         return jsonify({'error': str(e)}), 502
+
+# ── AWARDS API ───────────────────────────────────────────────────────────────
+@app.route('/api/awards')
+def get_awards():
+    if awards_col is None:
+        return jsonify([]), 500
+    items = list(awards_col.find({}).sort('order', 1))
+    for i in items:
+        i['_id'] = str(i['_id'])
+    return jsonify(items)
+
+@app.route('/api/admin/awards', methods=['POST'])
+@login_required
+def add_award():
+    if awards_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    data  = request.json or {}
+    title = sanitize(data.get('title') or '', max_len=200)
+    org   = sanitize(data.get('org')   or '', max_len=200)
+    year  = sanitize(data.get('year')  or '', max_len=10)
+    desc  = sanitize(data.get('desc')  or '', max_len=500)
+    if not title:
+        return jsonify({'error': 'title required'}), 400
+    top   = awards_col.find_one(sort=[('order', -1)])
+    order = (top['order'] + 1) if top else 0
+    result = awards_col.insert_one({'title': title, 'org': org, 'year': year, 'desc': desc, 'order': order})
+    return jsonify({'status': 'added', '_id': str(result.inserted_id)})
+
+@app.route('/api/admin/awards/<award_id>', methods=['PUT'])
+@login_required
+def update_award(award_id):
+    if awards_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(award_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    data = request.json or {}
+    awards_col.update_one({'_id': oid}, {'$set': {
+        'title': sanitize(data.get('title') or '', max_len=200),
+        'org':   sanitize(data.get('org')   or '', max_len=200),
+        'year':  sanitize(data.get('year')  or '', max_len=10),
+        'desc':  sanitize(data.get('desc')  or '', max_len=500),
+    }})
+    return jsonify({'status': 'updated'})
+
+@app.route('/api/admin/awards/<award_id>', methods=['DELETE'])
+@login_required
+def delete_award(award_id):
+    if awards_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(award_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    awards_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
+
+# ── BLOGS API ─────────────────────────────────────────────────────────────────
+@app.route('/api/blogs')
+def get_blogs():
+    if blogs_col is None:
+        return jsonify([]), 500
+    items = list(blogs_col.find({}).sort('date', -1))
+    for i in items:
+        i['_id']  = str(i['_id'])
+        i['date'] = i['date'].strftime('%d %b %Y') if i.get('date') else ''
+    return jsonify(items)
+
+@app.route('/api/admin/blogs', methods=['POST'])
+@login_required
+def add_blog():
+    if blogs_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    data    = request.json or {}
+    title   = sanitize(data.get('title')   or '', max_len=200)
+    excerpt = sanitize(data.get('excerpt') or '', max_len=400)
+    body    = sanitize(data.get('body')    or '', max_len=5000)
+    thumb   = sanitize(data.get('thumb')   or '', max_len=300)
+    tags    = [sanitize(t, max_len=50) for t in data.get('tags', []) if t][:8]
+    if not title or not body:
+        return jsonify({'error': 'title and body required'}), 400
+    result = blogs_col.insert_one({
+        'title': title, 'excerpt': excerpt, 'body': body,
+        'thumb': thumb, 'tags': tags, 'date': datetime.now(timezone.utc)
+    })
+    return jsonify({'status': 'added', '_id': str(result.inserted_id)})
+
+@app.route('/api/admin/blogs/<blog_id>', methods=['PUT'])
+@login_required
+def update_blog(blog_id):
+    if blogs_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(blog_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    data = request.json or {}
+    blogs_col.update_one({'_id': oid}, {'$set': {
+        'title':   sanitize(data.get('title')   or '', max_len=200),
+        'excerpt': sanitize(data.get('excerpt') or '', max_len=400),
+        'body':    sanitize(data.get('body')    or '', max_len=5000),
+        'thumb':   sanitize(data.get('thumb')   or '', max_len=300),
+        'tags':    [sanitize(t, max_len=50) for t in data.get('tags', []) if t][:8],
+    }})
+    return jsonify({'status': 'updated'})
+
+@app.route('/api/admin/blogs/<blog_id>', methods=['DELETE'])
+@login_required
+def delete_blog(blog_id):
+    if blogs_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(blog_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    blogs_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
 
 # ── PUBLIC READ APIs ──────────────────────────────────────────────────────────
 @app.route('/api/about')

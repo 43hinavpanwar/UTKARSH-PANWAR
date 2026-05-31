@@ -190,6 +190,32 @@
       {% endfor %}
     </section>
 
+    <!-- AWARDS & RECOGNITION -->
+    <section id="S_awards">
+      <div class="section-label reveal">RECOGNITION</div>
+      <h2 class="section-heading reveal">Awards &amp; <em>Achievements</em></h2>
+      <div id="awards-grid"></div>
+    </section>
+
+    <!-- BLOG / BEHIND THE SCENES -->
+    <section id="S_blog">
+      <div class="section-label reveal">BEHIND THE SCENES</div>
+      <h2 class="section-heading reveal">Blog &amp; <em>Breakdowns</em></h2>
+      <div id="blog-grid"></div>
+    </section>
+
+    <!-- BLOG MODAL -->
+    <div id="blog-modal">
+      <div id="blog-modal-inner">
+        <button id="blog-modal-close"><i class="fas fa-times"></i></button>
+        <img id="blog-modal-thumb" src="" alt="" style="display:none;" />
+        <div id="blog-modal-date"></div>
+        <div id="blog-modal-title"></div>
+        <div id="blog-modal-tags"></div>
+        <div id="blog-modal-body"></div>
+      </div>
+    </div>
+
     <!-- LOCATION & WEATHER -->
     <section id="S_location">
       <div class="section-label reveal">LOCATION</div>
@@ -301,6 +327,76 @@
 
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <script>
+    async function syncAwards() {
+      try {
+        const items = await fetch('/api/awards').then(r => r.json());
+        const grid = document.getElementById('awards-grid');
+        if (!items.length) { document.getElementById('S_awards').style.display = 'none'; return; }
+        grid.innerHTML = items.map(a => `
+          <div class="award-card reveal">
+            <div class="award-icon"><i class="fas fa-trophy"></i></div>
+            <div class="award-title">${a.title}</div>
+            <div class="award-meta">
+              ${a.org  ? `<span class="award-org">${a.org}</span>` : ''}
+              ${a.year ? `<span class="award-year">${a.year}</span>` : ''}
+            </div>
+            ${a.desc ? `<div class="award-desc">${a.desc}</div>` : ''}
+          </div>`).join('');
+        grid.querySelectorAll('.reveal').forEach((el, i) => {
+          el.style.transitionDelay = (i % 4) * 0.1 + 's';
+          if (typeof revealObserver !== 'undefined') revealObserver.observe(el);
+        });
+      } catch(e) { document.getElementById('S_awards').style.display = 'none'; }
+    }
+
+    async function syncBlogs() {
+      try {
+        const items = await fetch('/api/blogs').then(r => r.json());
+        const grid = document.getElementById('blog-grid');
+        if (!items.length) { document.getElementById('S_blog').style.display = 'none'; return; }
+        grid.innerHTML = items.map(b => `
+          <div class="blog-card reveal" onclick="openBlog(${JSON.stringify(b).replace(/"/g, '&quot;')})">
+            ${b.thumb
+              ? `<img class="blog-thumb" src="${b.thumb}" alt="${b.title}" loading="lazy" />`
+              : `<div class="blog-thumb-placeholder"><i class="fas fa-film"></i></div>`}
+            <div class="blog-body">
+              <div class="blog-date">${b.date}</div>
+              <div class="blog-title">${b.title}</div>
+              ${b.excerpt ? `<div class="blog-excerpt">${b.excerpt}</div>` : ''}
+              <div class="blog-tags">${(b.tags||[]).map(t => `<span>${t}</span>`).join('')}</div>
+            </div>
+          </div>`).join('');
+        grid.querySelectorAll('.reveal').forEach((el, i) => {
+          el.style.transitionDelay = (i % 3) * 0.12 + 's';
+          if (typeof revealObserver !== 'undefined') revealObserver.observe(el);
+        });
+      } catch(e) { document.getElementById('S_blog').style.display = 'none'; }
+    }
+
+    function openBlog(b) {
+      const modal = document.getElementById('blog-modal');
+      const thumb = document.getElementById('blog-modal-thumb');
+      if (b.thumb) { thumb.src = b.thumb; thumb.style.display = 'block'; }
+      else { thumb.style.display = 'none'; }
+      document.getElementById('blog-modal-date').textContent  = b.date;
+      document.getElementById('blog-modal-title').textContent = b.title;
+      document.getElementById('blog-modal-body').textContent  = b.body;
+      document.getElementById('blog-modal-tags').innerHTML    = (b.tags||[]).map(t => `<span class="blog-tags"><span>${t}</span></span>`).join('');
+      modal.classList.add('open');
+      document.body.style.overflow = 'hidden';
+    }
+
+    document.getElementById('blog-modal-close').addEventListener('click', () => {
+      document.getElementById('blog-modal').classList.remove('open');
+      document.body.style.overflow = '';
+    });
+    document.getElementById('blog-modal').addEventListener('click', e => {
+      if (e.target === document.getElementById('blog-modal')) {
+        document.getElementById('blog-modal').classList.remove('open');
+        document.body.style.overflow = '';
+      }
+    });
+
     async function syncLocation() {
       try {
         const w = await fetch('/api/weather').then(r => r.json());
@@ -520,6 +616,8 @@
     syncSkills();
     syncWork();
     syncCredits();
+    syncAwards();
+    syncBlogs();
     syncLocation();
 
     // ── VISITOR NAME PROMPT ────────────────────────────────────────────────────
