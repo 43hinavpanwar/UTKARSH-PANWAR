@@ -233,14 +233,28 @@
     <button id="back-to-top" aria-label="Back to top"><i class="fas fa-chevron-up"></i></button>
 
     <!-- VISITOR NAME PROMPT -->
-    <div id="visitor-toast" style="
-      position:fixed;bottom:2rem;left:50%;transform:translateX(-50%) translateY(120px);
-      background:#111;border:1px solid rgba(232,98,42,0.4);border-radius:12px;
-      padding:1.1rem 1.4rem;z-index:9999;min-width:280px;max-width:340px;
-      box-shadow:0 8px 32px rgba(0,0,0,0.5);transition:transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
-      font-family:'Inter',sans-serif;">
+    <style>
+      #visitor-toast {
+        position: fixed;
+        bottom: 2rem;
+        left: 50%;
+        transform: translateX(-50%) translateY(120px);
+        background: #111;
+        border: 1px solid rgba(232,98,42,0.4);
+        border-radius: 12px;
+        padding: 1.1rem 1.4rem;
+        z-index: 9999;
+        width: calc(100vw - 2rem);
+        max-width: 340px;
+        box-sizing: border-box;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        transition: transform 0.4s cubic-bezier(0.34,1.56,0.64,1);
+        font-family: 'Inter', sans-serif;
+      }
+    </style>
+    <div id="visitor-toast">
       <p style="font-size:0.85rem;color:#ccc;margin-bottom:0.75rem;line-height:1.5;">
-        👋 Hey! Want to leave your name so we know who visited?
+        👋 Hey! Please enter your name so we know who visited.
       </p>
       <div style="display:flex;gap:0.5rem;">
         <input id="visitor-name-input" type="text" placeholder="Your name" maxlength="60"
@@ -250,9 +264,6 @@
         <button onclick="saveVisitorName()"
           style="background:#e8622a;border:none;border-radius:6px;color:#fff;
                  padding:0.5rem 0.9rem;font-size:0.8rem;font-weight:600;cursor:pointer;">Save</button>
-        <button onclick="dismissVisitorToast()"
-          style="background:transparent;border:1px solid #333;border-radius:6px;color:#666;
-                 padding:0.5rem 0.7rem;font-size:0.8rem;cursor:pointer;">✕</button>
       </div>
     </div>
 
@@ -473,27 +484,25 @@
 
       const saved = localStorage.getItem(STORAGE_KEY);
       if (saved) {
-        // Already known — make sure cookie is in sync (e.g. after browser data clear)
         syncCookie(saved);
-      } else if (!localStorage.getItem(DISMISSED_KEY)) {
-        // First visit — show toast after preloader
-        setTimeout(() => {
+      } else {
+        // No name yet — show toast and keep re-showing until name is saved
+        function showToast() {
           toast.style.transform = 'translateX(-50%) translateY(0)';
           document.getElementById('visitor-name-input').focus();
-        }, 4200);
+        }
+        setTimeout(showToast, 4200);
       }
 
       window.saveVisitorName = function () {
         const name = document.getElementById('visitor-name-input').value.trim();
-        if (!name) return;
+        if (!name) {
+          document.getElementById('visitor-name-input').style.border = '1px solid #e8622a';
+          return;
+        }
         localStorage.setItem(STORAGE_KEY, name);
-        syncCookie(name);          // cookie set → all future page loads logged with name
-        patchCurrentVisit(name);   // patch this visit row too (first save edge case)
-        toast.style.transform = 'translateX(-50%) translateY(120px)';
-      };
-
-      window.dismissVisitorToast = function () {
-        localStorage.setItem(DISMISSED_KEY, '1');
+        syncCookie(name);
+        patchCurrentVisit(name);
         toast.style.transform = 'translateX(-50%) translateY(120px)';
       };
     })();
