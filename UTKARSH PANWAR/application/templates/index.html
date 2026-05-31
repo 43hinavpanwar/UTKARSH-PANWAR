@@ -399,8 +399,13 @@
 
     async function syncLocation() {
       try {
-        const w = await fetch('/api/weather').then(r => r.json());
-        if (w.error) { document.getElementById('S_location').style.display = 'none'; return; }
+        const loc = await fetch('/api/weather').then(r => r.json());
+        if (loc.error) { document.getElementById('S_location').style.display = 'none'; return; }
+        const w = await fetch(
+          `https://api.open-meteo.com/v1/forecast?latitude=${loc.lat}&longitude=${loc.lon}` +
+          `&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m` +
+          `&temperature_unit=celsius&windspeed_unit=kmh&timezone=auto`
+        ).then(r => r.json());
         const icons = {
           0:'☀️', 1:'🌤️', 2:'⛅', 3:'☁️',
           45:'🌫️', 48:'🌫️',
@@ -419,13 +424,14 @@
           80:'Showers', 81:'Heavy Showers', 82:'Violent Showers',
           95:'Thunderstorm', 96:'Thunderstorm', 99:'Thunderstorm',
         };
-        const code = w.code;
-        document.getElementById('loc-city-name').textContent = w.city;
+        const cur  = w.current;
+        const code = cur.weathercode;
+        document.getElementById('loc-city-name').textContent = loc.city;
         document.getElementById('loc-timezone').textContent  = w.timezone.replace('_', ' ');
         document.getElementById('loc-weather-icon').textContent = icons[code] ?? '🌡️';
-        document.getElementById('loc-temp').textContent     = `${Math.round(w.temp)}°C  ${descs[code] ?? ''}`;
-        document.getElementById('loc-wind').textContent     = `${w.wind} km/h`;
-        document.getElementById('loc-humidity').textContent = `${w.humidity}%`;
+        document.getElementById('loc-temp').textContent     = `${Math.round(cur.temperature_2m)}°C  ${descs[code] ?? ''}`;
+        document.getElementById('loc-wind').textContent     = `${cur.windspeed_10m} km/h`;
+        document.getElementById('loc-humidity').textContent = `${cur.relativehumidity_2m}%`;
       } catch(e) { document.getElementById('S_location').style.display = 'none'; }
     }
 
