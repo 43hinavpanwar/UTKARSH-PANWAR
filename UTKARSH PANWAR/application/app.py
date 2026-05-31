@@ -615,12 +615,13 @@ def get_weather():
     if not lat or not lon:
         return jsonify({'error': 'no location set'}), 404
     try:
-        import urllib.request, json as _json
+        import requests as _req
         url = (f'https://api.open-meteo.com/v1/forecast?latitude={lat}&longitude={lon}'
                '&current=temperature_2m,weathercode,windspeed_10m,relativehumidity_2m'
                '&temperature_unit=celsius&windspeed_unit=kmh&timezone=auto')
-        with urllib.request.urlopen(url, timeout=5) as resp:
-            data = _json.loads(resp.read())
+        resp = _req.get(url, timeout=8)
+        resp.raise_for_status()
+        data = resp.json()
         cur = data['current']
         return jsonify({
             'city':     loc.get('city', ''),
@@ -631,6 +632,7 @@ def get_weather():
             'timezone': data.get('timezone', ''),
         })
     except Exception as e:
+        logger.error(f'Weather fetch failed: {e}')
         return jsonify({'error': str(e)}), 502
 
 # ── AWARDS API ───────────────────────────────────────────────────────────────
