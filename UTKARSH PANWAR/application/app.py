@@ -223,7 +223,7 @@ def get_visits():
     docs     = list(visits_col.find(BOT_FILTER).sort('ts', -1).skip((page - 1) * per_page).limit(per_page))
     for d in docs:
         d['_id'] = str(d['_id'])
-        d['ts']  = d['ts'].strftime('%d %b %Y, %H:%M:%S') if d.get('ts') else ''
+        d['ts']  = d['ts'].strftime('%Y-%m-%dT%H:%M:%SZ') if d.get('ts') else ''
     return jsonify({'visits': docs, 'total': total, 'page': page, 'pages': -(-total // per_page)})
 
 @app.route('/api/admin/visits/stats')

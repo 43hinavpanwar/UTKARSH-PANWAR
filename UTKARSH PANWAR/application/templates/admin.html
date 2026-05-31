@@ -422,7 +422,7 @@
       <table id="visits-table" style="width:100%;border-collapse:collapse;font-size:0.82rem;">
         <thead>
           <tr style="border-bottom:1px solid rgba(255,255,255,0.08);color:#888;text-align:left;">
-            <th style="padding:0.5rem 0.75rem;">Time (UTC)</th>
+            <th style="padding:0.5rem 0.75rem;">Time (Local)</th>
             <th style="padding:0.5rem 0.75rem;">Visitor</th>
             <th style="padding:0.5rem 0.75rem;">IP</th>
             <th style="padding:0.5rem 0.75rem;">Page</th>
@@ -889,7 +889,7 @@ async function loadVisits(page = 1) {
   const tbody = document.getElementById('visits-body');
   tbody.innerHTML = data.visits.length ? data.visits.map(v => `
     <tr style="border-bottom:1px solid rgba(255,255,255,0.04);">
-      <td style="padding:0.5rem 0.75rem;color:#aaa;white-space:nowrap;">${v.ts}</td>
+      <td style="padding:0.5rem 0.75rem;color:#aaa;white-space:nowrap;">${v.ts ? new Date(v.ts).toLocaleString() : ''}</td>
       <td style="padding:0.5rem 0.75rem;">
         ${v.name
           ? `<span style="color:#4ade80;font-weight:600;"><i class="fas fa-user" style="font-size:0.7rem;margin-right:0.3rem;"></i>${escapeHtml(v.name)}</span>`
