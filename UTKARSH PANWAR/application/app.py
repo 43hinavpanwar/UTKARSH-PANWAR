@@ -92,10 +92,12 @@ try:
     awards_col   = db['awards']
     blogs_col    = db['blogs']
     timeline_col = db['timeline']
+    companies_col = db['companies']
+    ratings_col = db['ratings'] 
     logger.info("✅ MongoDB connected successfully!")
 except Exception as e:
     logger.error(f"❌ MongoDB connection failed: {e}")
-    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = timeline_col = None
+    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = timeline_col = companies_col = ratings_col = None
 
 atexit.register(lambda: mongo_client.close() if mongo_client is not None else None)
 
@@ -175,6 +177,22 @@ def seed():
         ])
         logger.info("Seeded Skills data")
 
+    if companies_col.count_documents({}) == 0:
+        companies_col.insert_many([
+            {
+                'name': 'DNEG',
+                'img_url': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYtPVowYSiIkaYTkW_buegniOVF3VlP76nEg&s',  # Replace with actual logo URL
+                'order': 0,
+                'created_at': datetime.now(timezone.utc)
+            },
+            {
+                'name': 'Nicklodean',
+                'img_url': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nickelodeon_2023_logo.svg',  # Replace with actual logo URL
+                'order': 1,
+                'created_at': datetime.now(timezone.utc)
+            },
+        ])
+        logger.info("Seeded Companies data")
 seed()
 
 # ── ONE-TIME MIGRATIONS ───────────────────────────────────────────────────────
@@ -255,6 +273,118 @@ def clear_visits():
     visits_col.delete_many({})
     return jsonify({'status': 'cleared'})
 
+# ── RATINGS API ─────────────────────────────────────────────────────────────
+@app.route('/api/ratings', methods=['GET'])
+def get_ratings():
+    """Get average rating and total count"""
+    if ratings_col is None:
+        return jsonify({'average': 0, 'total': 0}), 500
+    
+    # Get all ratings
+    all_ratings = list(ratings_col.find({}, {'value': 1}))
+    total = len(all_ratings)
+    
+    if total == 0:
+        return jsonify({'average': 0, 'total': 0, 'stars': [0,0,0,0,0]})
+    
+    # Calculate average
+    avg = sum(r['value'] for r in all_ratings) / total
+    
+    # Calculate distribution (how many of each star)
+    distribution = [0, 0, 0, 0, 0]
+    for r in all_ratings:
+        if 1 <= r['value'] <= 5:
+            distribution[r['value'] - 1] += 1
+    
+    return jsonify({
+        'average': round(avg, 1),
+        'total': total,
+        'distribution': distribution
+    })
+
+@app.route('/api/ratings', methods=['POST'])
+@limiter.limit('3 per hour')  # Prevent spam
+def submit_rating():
+    """Submit a new rating"""
+    if ratings_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    data = request.json or {}
+    rating = data.get('rating')
+    name = sanitize(data.get('name', 'Anonymous'), max_len=100)
+    comment = sanitize(data.get('comment', ''), max_len=500)
+    
+    # Validate rating
+    if not rating or not isinstance(rating, (int, float)):
+        return jsonify({'error': 'Valid rating (1-5) required'}), 400
+    
+    rating = int(rating)
+    if rating < 1 or rating > 5:
+        return jsonify({'error': 'Rating must be between 1 and 5'}), 400
+    
+    # Get IP for duplicate prevention (optional)
+    ip = request.headers.get('X-Forwarded-For', request.remote_addr).split(',')[0].strip()
+    
+    # Check if this IP already rated in last 24 hours (optional anti-spam)
+    last_day = datetime.now(timezone.utc) - timedelta(hours=24)
+    recent = ratings_col.count_documents({
+        'ip': ip,
+        'created_at': {'$gte': last_day}
+    })
+    
+    if recent >= 2:  # Max 2 ratings per IP per day
+        return jsonify({'error': 'You have reached the rating limit for today'}), 429
+    
+    # Save rating
+    result = ratings_col.insert_one({
+        'value': rating,
+        'name': name,
+        'comment': comment,
+        'ip': ip,
+        'created_at': datetime.now(timezone.utc)
+    })
+    
+    # Get updated stats
+    all_ratings = list(ratings_col.find({}, {'value': 1}))
+    total = len(all_ratings)
+    avg = sum(r['value'] for r in all_ratings) / total if total > 0 else 0
+    
+    return jsonify({
+        'status': 'submitted',
+        'average': round(avg, 1),
+        'total': total,
+        'rating_id': str(result.inserted_id)
+    })
+
+@app.route('/api/admin/ratings')
+@login_required
+def get_all_ratings():
+    """Admin endpoint to view all ratings"""
+    if ratings_col is None:
+        return jsonify([]), 500
+    
+    ratings = list(ratings_col.find({}).sort('created_at', -1))
+    for r in ratings:
+        r['_id'] = str(r['_id'])
+        r['created_at'] = r['created_at'].strftime('%Y-%m-%d %H:%M:%S') if r.get('created_at') else ''
+        r.pop('ip', None)  # Hide IP from admin view for privacy
+    
+    return jsonify(ratings)
+
+@app.route('/api/admin/ratings/<rating_id>', methods=['DELETE'])
+@login_required
+def delete_rating(rating_id):
+    """Admin endpoint to delete a rating"""
+    if ratings_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    oid = safe_object_id(rating_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    
+    ratings_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
+
 # ── VISITOR IDENTIFY (patch current visit with name on first save) ────────────
 @app.route('/api/visitor/identify', methods=['POST'])
 def visitor_identify():
@@ -285,7 +415,16 @@ def index():
     about   = (about_col.find_one({'_id': 'about'}, {'_id': 0}) or {}) if about_col is not None else {}
     credits = list(credits_col.find({}, {'_id': 0}).sort('order', 1)) if credits_col is not None else []
     work    = list(work_col.find({}, {'_id': 0}).sort('order', 1)) if work_col is not None else []
-    return render_template('index.html', about=about, credits=credits, work=work)
+    companies = list(companies_col.find({}, {'_id': 0}).sort('order', 1)) if companies_col is not None else []
+    ratings_stats = {'average': 0, 'total': 0}
+    if ratings_col is not None:
+        all_ratings = list(ratings_col.find({}, {'value': 1}))
+        total = len(all_ratings)
+        if total > 0:
+            avg = sum(r['value'] for r in all_ratings) / total
+            ratings_stats = {'average': round(avg, 1), 'total': total}
+
+    return render_template('index.html', about=about, credits=credits, work=work, companies=companies, ratings=ratings_stats)
 
 @app.route('/api/work/<work_id>/view', methods=['POST'])
 def track_view(work_id):
@@ -830,6 +969,125 @@ def get_work():
         i['_id'] = str(i['_id'])
         i.setdefault('views', 0)
     return jsonify(items)
+
+# ── COMPANIES API ─────────────────────────────────────────────────────────────
+@app.route('/api/companies')
+def get_companies():
+    """Public endpoint to get all companies for footer display"""
+    if companies_col is None:
+        return jsonify([]), 500
+    companies = list(companies_col.find({}).sort('order', 1))
+    for c in companies:
+        c['_id'] = str(c['_id'])
+        if 'created_at' in c:
+            c['created_at'] = c['created_at'].isoformat() if c['created_at'] else None
+    return jsonify(companies)
+
+@app.route('/api/admin/companies', methods=['GET'])
+@login_required
+def admin_get_companies():
+    """Admin endpoint to get all companies"""
+    if companies_col is None:
+        return jsonify([]), 500
+    companies = list(companies_col.find({}).sort('order', 1))
+    for c in companies:
+        c['_id'] = str(c['_id'])
+        if 'created_at' in c:
+            c['created_at'] = c['created_at'].isoformat() if c['created_at'] else None
+    return jsonify(companies)
+
+@app.route('/api/admin/companies', methods=['POST'])
+@login_required
+def add_company():
+    """Add a new company"""
+    if companies_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    data = request.json or {}
+    name = sanitize(data.get('name', ''), max_len=100)
+    img_url = sanitize(data.get('img_url', ''), max_len=500)
+    
+    if not name or not img_url:
+        return jsonify({'error': 'Both name and image URL are required'}), 400
+    
+    # Get the highest order value
+    last_company = companies_col.find_one(sort=[('order', -1)])
+    order = (last_company.get('order', -1) + 1) if last_company else 0
+    
+    result = companies_col.insert_one({
+        'name': name,
+        'img_url': img_url,
+        'order': order,
+        'created_at': datetime.now(timezone.utc)
+    })
+    
+    return jsonify({
+        'status': 'added',
+        '_id': str(result.inserted_id),
+        'name': name,
+        'img_url': img_url,
+        'order': order
+    })
+
+@app.route('/api/admin/companies/<company_id>', methods=['PUT'])
+@login_required
+def update_company(company_id):
+    """Update a company"""
+    if companies_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    oid = safe_object_id(company_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    
+    data = request.json or {}
+    name = sanitize(data.get('name', ''), max_len=100)
+    img_url = sanitize(data.get('img_url', ''), max_len=500)
+    
+    if not name and not img_url:
+        return jsonify({'error': 'Nothing to update'}), 400
+    
+    update_data = {}
+    if name:
+        update_data['name'] = name
+    if img_url:
+        update_data['img_url'] = img_url
+    
+    companies_col.update_one({'_id': oid}, {'$set': update_data})
+    return jsonify({'status': 'updated'})
+
+@app.route('/api/admin/companies/<company_id>', methods=['DELETE'])
+@login_required
+def delete_company(company_id):
+    """Delete a company"""
+    if companies_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    oid = safe_object_id(company_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    
+    companies_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
+
+@app.route('/api/admin/companies/reorder', methods=['POST'])
+@login_required
+def reorder_companies():
+    """Reorder companies (for drag-and-drop)"""
+    if companies_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    
+    order_data = (request.json or {}).get('order', [])
+    
+    for item in order_data:
+        oid = safe_object_id(item.get('id'))
+        if oid:
+            companies_col.update_one(
+                {'_id': oid}, 
+                {'$set': {'order': item.get('order', 0)}}
+            )
+    
+    return jsonify({'status': 'reordered'})
 
 # ── RUN ───────────────────────────────────────────────────────────────────────
 if __name__ == '__main__':
