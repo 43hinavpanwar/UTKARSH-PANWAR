@@ -190,6 +190,13 @@
       {% endfor %}
     </section>
 
+    <!-- CAREER TIMELINE -->
+    <section id="S_timeline">
+      <div class="section-label reveal">JOURNEY</div>
+      <h2 class="section-heading reveal">Career <em>Timeline</em></h2>
+      <div id="timeline-wrap"></div>
+    </section>
+
     <!-- AWARDS & RECOGNITION -->
     <section id="S_awards">
       <div class="section-label reveal">RECOGNITION</div>
@@ -327,6 +334,29 @@
 
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <script>
+    async function syncTimeline() {
+      try {
+        const items = await fetch('/api/timeline').then(r => r.json());
+        const wrap = document.getElementById('timeline-wrap');
+        if (!items.length) { document.getElementById('S_timeline').style.display = 'none'; return; }
+        wrap.innerHTML = items.map(t => `
+          <div class="tl-item reveal">
+            <div class="tl-dot"></div>
+            <div class="tl-card">
+              ${t.period ? `<div class="tl-period">${t.period}</div>` : ''}
+              <div class="tl-role">${t.role}</div>
+              <div class="tl-org"><i class="fas fa-building" style="color:var(--accent);margin-right:0.6rem;font-size:1.1rem;"></i>${t.org}</div>
+              ${t.desc ? `<div class="tl-desc">${t.desc}</div>` : ''}
+              ${t.tags?.length ? `<div class="tl-tags">${t.tags.map(g => `<span>${g}</span>`).join('')}</div>` : ''}
+            </div>
+          </div>`).join('');
+        wrap.querySelectorAll('.reveal').forEach((el, i) => {
+          el.style.transitionDelay = i * 0.15 + 's';
+          if (typeof revealObserver !== 'undefined') revealObserver.observe(el);
+        });
+      } catch(e) { document.getElementById('S_timeline').style.display = 'none'; }
+    }
+
     async function syncAwards() {
       try {
         const items = await fetch('/api/awards').then(r => r.json());
@@ -622,6 +652,7 @@
     syncSkills();
     syncWork();
     syncCredits();
+    syncTimeline();
     syncAwards();
     syncBlogs();
     syncLocation();

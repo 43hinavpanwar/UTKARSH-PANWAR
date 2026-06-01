@@ -612,6 +612,32 @@
     <p class="msg" id="about-msg"></p>
   </section>
 
+  <!-- TIMELINE SECTION -->
+  <section class="section">
+    <div class="section-title">
+      <i class="fas fa-timeline"></i>
+      <span>Career Timeline</span>
+      <span style="font-size:0.75rem;color:#888;margin-left:auto;">Drag to reorder</span>
+    </div>
+    <div id="timeline-admin-wrap" style="display:flex;flex-direction:column;gap:0.75rem;margin-bottom:1.5rem;"></div>
+    <div class="add-section">
+      <div class="form-grid">
+        <div class="field"><label>Role / Position</label><input id="tl-role" placeholder="FX TD" /></div>
+        <div class="field"><label>Studio / Organisation</label><input id="tl-org" placeholder="DNEG" /></div>
+        <div class="field"><label>Period</label><input id="tl-period" placeholder="2022 – Present" /></div>
+        <div class="field"><label>Tags (comma separated)</label><input id="tl-tags" placeholder="Houdini, FX, Film" /></div>
+      </div>
+      <div class="field" style="margin-bottom:1rem;">
+        <label>Description</label>
+        <textarea id="tl-desc" rows="3" placeholder="What you did here..."></textarea>
+      </div>
+      <button class="btn btn-primary" onclick="addTimeline()">
+        <i class="fas fa-plus-circle"></i> Add Entry
+      </button>
+    </div>
+    <p class="msg" id="timeline-msg"></p>
+  </section>
+
   <!-- AWARDS SECTION -->
   <section class="section">
     <div class="section-title">
@@ -823,6 +849,75 @@ async function saveAbout() {
   };
   const r = await api('/api/admin/about', 'POST', payload);
   showMsg('about-msg', r.error ? '❌ ' + r.error : '✅ All changes saved successfully!', !!r.error);
+}
+
+// TIMELINE
+async function loadTimeline() {
+  const items = await api('/api/timeline');
+  const wrap = document.getElementById('timeline-admin-wrap');
+  if (!items.length) { wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No entries yet.</p>'; return; }
+  wrap.innerHTML = '';
+  items.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'admin-card';
+    div.id = 'tl-' + t._id;
+    div.setAttribute('draggable', 'true');
+    div.dataset.id = t._id;
+    div.innerHTML = `
+      <div class="card-header">
+        <span class="card-title"><i class="fas fa-grip-vertical" style="color:#555;margin-right:0.5rem;cursor:grab;"></i>${escapeHtml(t.role)} — ${escapeHtml(t.org)}</span>
+        <div style="display:flex;gap:0.5rem;">
+          <span style="font-size:0.75rem;color:#888;">${escapeHtml(t.period||'')}</span>
+          <button class="btn btn-danger" onclick="deleteTimeline('${t._id}')" style="margin-top:0;"><i class="fas fa-trash"></i></button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-top:0.75rem;">
+        <div class="field"><label>Role</label><input id="tlr-${t._id}" value="${escapeHtml(t.role)}" /></div>
+        <div class="field"><label>Organisation</label><input id="tlo-${t._id}" value="${escapeHtml(t.org)}" /></div>
+        <div class="field"><label>Period</label><input id="tlp-${t._id}" value="${escapeHtml(t.period||'')}" /></div>
+        <div class="field"><label>Tags</label><input id="tltg-${t._id}" value="${(t.tags||[]).join(', ')}" /></div>
+      </div>
+      <div class="field" style="margin-top:0.75rem;"><label>Description</label><textarea id="tld-${t._id}" rows="2">${escapeHtml(t.desc||'')}</textarea></div>
+      <button class="btn btn-primary" onclick="updateTimeline('${t._id}')" style="margin-top:0.75rem;">
+        <i class="fas fa-save"></i> Save
+      </button>`;
+    wrap.appendChild(div);
+  });
+  enableDrag('timeline-admin-wrap', '/api/admin/timeline/reorder');
+}
+
+async function addTimeline() {
+  const role = document.getElementById('tl-role').value.trim();
+  const org  = document.getElementById('tl-org').value.trim();
+  if (!role || !org) return showMsg('timeline-msg', 'Role and organisation required', true);
+  const r = await api('/api/admin/timeline', 'POST', {
+    role, org,
+    period: document.getElementById('tl-period').value.trim(),
+    desc:   document.getElementById('tl-desc').value.trim(),
+    tags:   document.getElementById('tl-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+  });
+  if (r.error) return showMsg('timeline-msg', r.error, true);
+  ['tl-role','tl-org','tl-period','tl-desc','tl-tags'].forEach(id => document.getElementById(id).value = '');
+  showMsg('timeline-msg', '✅ Entry added');
+  loadTimeline();
+}
+
+async function updateTimeline(id) {
+  const r = await api(`/api/admin/timeline/${id}`, 'PUT', {
+    role:   document.getElementById('tlr-'  + id).value,
+    org:    document.getElementById('tlo-'  + id).value,
+    period: document.getElementById('tlp-'  + id).value,
+    desc:   document.getElementById('tld-'  + id).value,
+    tags:   document.getElementById('tltg-' + id).value.split(',').map(t => t.trim()).filter(Boolean),
+  });
+  showMsg('timeline-msg', r.error ? '❌ ' + r.error : '✅ Entry updated', !!r.error);
+}
+
+async function deleteTimeline(id) {
+  if (!confirm('Delete this entry?')) return;
+  await api(`/api/admin/timeline/${id}`, 'DELETE');
+  document.getElementById('tl-' + id)?.remove();
+  showMsg('timeline-msg', '✅ Entry deleted');
 }
 
 // AWARDS
@@ -1349,6 +1444,7 @@ function toggleTheme() {
 loadAbout();
 loadAvailable();
 loadSkills();
+loadTimeline();
 loadAwards();
 loadBlogs();
 loadCredits();

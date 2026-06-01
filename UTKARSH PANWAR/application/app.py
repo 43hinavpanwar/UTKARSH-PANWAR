@@ -91,10 +91,11 @@ try:
     skills_col   = db['skills']
     awards_col   = db['awards']
     blogs_col    = db['blogs']
+    timeline_col = db['timeline']
     logger.info("✅ MongoDB connected successfully!")
 except Exception as e:
     logger.error(f"❌ MongoDB connection failed: {e}")
-    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = None
+    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = timeline_col = None
 
 atexit.register(lambda: mongo_client.close() if mongo_client is not None else None)
 
@@ -616,6 +617,75 @@ def get_weather():
     if not lat or not lon:
         return jsonify({'error': 'no location set'}), 404
     return jsonify({'city': city, 'lat': lat, 'lon': lon})
+
+# ── TIMELINE API ─────────────────────────────────────────────────────────────
+@app.route('/api/timeline')
+def get_timeline():
+    if timeline_col is None:
+        return jsonify([]), 500
+    items = list(timeline_col.find({}).sort('order', 1))
+    for i in items:
+        i['_id'] = str(i['_id'])
+    return jsonify(items)
+
+@app.route('/api/admin/timeline', methods=['POST'])
+@login_required
+def add_timeline():
+    if timeline_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    data  = request.json or {}
+    role  = sanitize(data.get('role')    or '', max_len=200)
+    org   = sanitize(data.get('org')     or '', max_len=200)
+    period= sanitize(data.get('period')  or '', max_len=50)
+    desc  = sanitize(data.get('desc')    or '', max_len=500)
+    tags  = [sanitize(t, max_len=50) for t in data.get('tags', []) if t][:8]
+    if not role or not org:
+        return jsonify({'error': 'role and org required'}), 400
+    top   = timeline_col.find_one(sort=[('order', -1)])
+    order = (top['order'] + 1) if top else 0
+    result = timeline_col.insert_one({'role': role, 'org': org, 'period': period, 'desc': desc, 'tags': tags, 'order': order})
+    return jsonify({'status': 'added', '_id': str(result.inserted_id)})
+
+@app.route('/api/admin/timeline/<item_id>', methods=['PUT'])
+@login_required
+def update_timeline(item_id):
+    if timeline_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(item_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    data = request.json or {}
+    timeline_col.update_one({'_id': oid}, {'$set': {
+        'role':   sanitize(data.get('role')   or '', max_len=200),
+        'org':    sanitize(data.get('org')    or '', max_len=200),
+        'period': sanitize(data.get('period') or '', max_len=50),
+        'desc':   sanitize(data.get('desc')   or '', max_len=500),
+        'tags':   [sanitize(t, max_len=50) for t in data.get('tags', []) if t][:8],
+    }})
+    return jsonify({'status': 'updated'})
+
+@app.route('/api/admin/timeline/<item_id>', methods=['DELETE'])
+@login_required
+def delete_timeline(item_id):
+    if timeline_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(item_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    timeline_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
+
+@app.route('/api/admin/timeline/reorder', methods=['POST'])
+@login_required
+def reorder_timeline():
+    if timeline_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    order = (request.json or {}).get('order', [])
+    for item in order:
+        oid = safe_object_id(item.get('id'))
+        if oid:
+            timeline_col.update_one({'_id': oid}, {'$set': {'order': item['order']}})
+    return jsonify({'status': 'reordered'})
 
 # ── AWARDS API ───────────────────────────────────────────────────────────────
 @app.route('/api/awards')

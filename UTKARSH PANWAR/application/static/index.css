@@ -805,6 +805,124 @@ section { padding: clamp(6rem, 8vw, 10rem) 5%; }
   .btn-primary, .btn-ghost { padding: 1.2rem 2rem; font-size: 1.15rem; }
 }
 
+/* ── CAREER TIMELINE ─────────────────────────────────────────────────── */
+#S_timeline { background: var(--surface); }
+
+#timeline-wrap {
+  position: relative;
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 0 0 2rem;
+}
+
+#timeline-wrap::before {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 0; bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent), transparent);
+  transform: translateX(-50%);
+}
+
+.tl-item {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: calc(50% + 3.5rem);
+  margin-bottom: 4rem;
+  position: relative;
+}
+
+.tl-item:nth-child(even) {
+  justify-content: flex-start;
+  padding-right: 0;
+  padding-left: calc(50% + 3.5rem);
+}
+
+.tl-dot {
+  position: absolute;
+  left: 50%;
+  top: 2.2rem;
+  transform: translateX(-50%);
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--accent);
+  border: 3px solid var(--surface);
+  box-shadow: 0 0 0 3px rgba(232,98,42,0.3);
+  z-index: 1;
+  transition: box-shadow 0.3s;
+}
+
+.tl-item:hover .tl-dot {
+  box-shadow: 0 0 0 6px rgba(232,98,42,0.2);
+}
+
+.tl-card {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 2.4rem;
+  max-width: 360px;
+  width: 100%;
+  transition: border-color 0.3s, transform 0.3s;
+}
+
+.tl-item:hover .tl-card {
+  border-color: rgba(232,98,42,0.4);
+  transform: translateY(-3px);
+}
+
+.tl-period {
+  font-size: 1.1rem;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  margin-bottom: 0.8rem;
+}
+
+.tl-role {
+  font-family: var(--font2);
+  font-size: 1.7rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  margin-bottom: 0.5rem;
+}
+
+.tl-org {
+  font-size: 1.3rem;
+  color: var(--muted);
+  margin-bottom: 1.2rem;
+}
+
+.tl-desc {
+  font-size: 1.3rem;
+  color: var(--muted);
+  line-height: 1.7;
+  margin-bottom: 1.2rem;
+}
+
+.tl-tags { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+.tl-tags span {
+  font-size: 1rem; padding: 0.25rem 0.9rem; border-radius: 100px;
+  background: rgba(232,98,42,0.08); color: var(--accent);
+  border: 1px solid rgba(232,98,42,0.2);
+}
+
+@media (max-width: 767px) {
+  #timeline-wrap::before { left: 1.6rem; }
+  .tl-item,
+  .tl-item:nth-child(even) {
+    justify-content: flex-start;
+    padding-left: 4.5rem;
+    padding-right: 0;
+  }
+  .tl-dot {
+    left: 1.6rem;
+  }
+  .tl-card { max-width: 100%; }
+}
+
 /* ── AWARDS & RECOGNITION ────────────────────────────────────────────── */
 #S_awards { background: var(--bg); }
 #awards-grid {
