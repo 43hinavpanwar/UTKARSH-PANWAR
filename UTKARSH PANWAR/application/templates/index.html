@@ -316,7 +316,7 @@
               ><i class="fa-brands fa-vimeo"></i
             ></a>
             <a
-              href="{{ url_for('static', filename='FILE/Resume.pdf') }}"
+              href="{{ about.get('social_links', {}).get('resume', '#') }}"
               target="_blank"
               rel="noopener noreferrer"
               id="three"
