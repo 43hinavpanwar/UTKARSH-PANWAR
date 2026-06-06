@@ -492,7 +492,7 @@ def update_about():
     if about_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
     data    = request.json or {}
-    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location', 'social_links', 'email', 'phone', 'showreel', 'name'}
+    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location', 'social_links', 'email', 'phone', 'showreel', 'name', 'playground'}
     update  = {k: v for k, v in data.items() if k in allowed}
     if not update:
         return jsonify({'error': 'Nothing to update'}), 400

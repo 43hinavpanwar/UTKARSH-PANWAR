@@ -798,6 +798,46 @@
               ></div>
             </div>
           </label>
+          <label
+            style="
+              display: flex;
+              align-items: center;
+              gap: 0.6rem;
+              cursor: pointer;
+              font-size: 0.85rem;
+              font-weight: 600;
+            "
+          >
+            <span style="color: #888">Visitor Playground</span>
+            <div
+              id="playground-toggle"
+              onclick="togglePlayground()"
+              style="
+                width: 44px;
+                height: 24px;
+                border-radius: 100px;
+                background: #333;
+                position: relative;
+                cursor: pointer;
+                transition: background 0.3s;
+                flex-shrink: 0;
+              "
+            >
+              <div
+                id="playground-knob"
+                style="
+                  width: 18px;
+                  height: 18px;
+                  border-radius: 50%;
+                  background: #fff;
+                  position: absolute;
+                  top: 3px;
+                  left: 3px;
+                  transition: transform 0.3s;
+                "
+              ></div>
+            </div>
+          </label>
         </div>
         <div class="form-grid">
           <div class="field">
@@ -2027,12 +2067,17 @@
         const st = document.getElementById("theme-site-toggle");
         const sk = document.getElementById("theme-site-knob");
         st.style.background = siteThemeDay ? "#e8622a" : "#333";
-        sk.style.transform = siteThemeDay
-          ? "translateX(20px)"
-          : "translateX(0)";
+        sk.style.transform = siteThemeDay ? "translateX(20px)" : "translateX(0)";
+
+        playgroundState = !!d.playground;
+        const pt = document.getElementById("playground-toggle");
+        const pk = document.getElementById("playground-knob");
+        pt.style.background = playgroundState ? "#a855f7" : "#333";
+        pk.style.transform  = playgroundState ? "translateX(20px)" : "translateX(0)";
       }
 
       let siteThemeDay = false;
+      let playgroundState = false;
 
       async function toggleSiteTheme() {
         siteThemeDay = !siteThemeDay;
@@ -2040,9 +2085,16 @@
         const st = document.getElementById("theme-site-toggle");
         const sk = document.getElementById("theme-site-knob");
         st.style.background = siteThemeDay ? "#e8622a" : "#333";
-        sk.style.transform = siteThemeDay
-          ? "translateX(20px)"
-          : "translateX(0)";
+        sk.style.transform = siteThemeDay ? "translateX(20px)" : "translateX(0)";
+      }
+
+      async function togglePlayground() {
+        playgroundState = !playgroundState;
+        await api("/api/admin/about", "POST", { playground: playgroundState });
+        const toggle = document.getElementById("playground-toggle");
+        const knob   = document.getElementById("playground-knob");
+        toggle.style.background = playgroundState ? "#a855f7" : "#333";
+        knob.style.transform    = playgroundState ? "translateX(20px)" : "translateX(0)";
       }
 
       async function toggleAvailable() {

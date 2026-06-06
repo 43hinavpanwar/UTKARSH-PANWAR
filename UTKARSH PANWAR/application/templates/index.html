@@ -126,11 +126,6 @@
             <div id="about-name">{{ about.get('name', 'Utkarsh Panwar') }}</div>
             <div id="about-role">{{ about.get('role', 'FX TD · DNEG') }}</div>
           </div>
-          <div id="accent-picker">
-            <div class="accent-label">THEME COLOR</div>
-            <canvas id="picker-canvas" width="160" height="120"></canvas>
-            <canvas id="hue-strip" width="160" height="14"></canvas>
-          </div>
         </div>
         <div id="about-right">
           <h2 class="section-heading reveal" id="about-heading">
@@ -613,6 +608,40 @@
       Thank you for rating!
     </div>
 
+    <!-- PLAYGROUND TOOLBAR -->
+    <div id="pg-toolbar" style="display:none;">
+      <button id="pg-trigger" title="VFX Playground">
+        <i class="fas fa-sliders"></i>
+      </button>
+      <div id="pg-panel">
+        <div class="pg-section-label">THEME COLOR</div>
+        <canvas id="picker-canvas" width="180" height="130"></canvas>
+        <canvas id="hue-strip" width="180" height="14"></canvas>
+
+        <div class="pg-section-label" style="margin-top:1rem;">SIM TYPE</div>
+        <div id="pg-sim-btns">
+          <button class="pg-btn active" data-sim="pyro">🔥 PYRO</button>
+          <button class="pg-btn" data-sim="fluid">💧 FLUID</button>
+          <button class="pg-btn" data-sim="rbd">💥 RBD</button>
+        </div>
+
+        <div class="pg-section-label" style="margin-top:1rem;">RENDER PASS</div>
+        <div id="pg-pass-btns">
+          <button class="pg-btn active" data-pass="beauty">BEAUTY</button>
+          <button class="pg-btn" data-pass="diffuse">DIFFUSE</button>
+          <button class="pg-btn" data-pass="emission">EMISSION</button>
+          <button class="pg-btn" data-pass="depth">DEPTH</button>
+        </div>
+
+        <div class="pg-section-label" style="margin-top:1rem;">MONITOR MODE</div>
+        <div id="pg-crt-btns">
+          <button class="pg-btn active" data-crt="off">OFF</button>
+          <button class="pg-btn" data-crt="crt">CRT</button>
+          <button class="pg-btn" data-crt="grain">GRAIN</button>
+        </div>
+      </div>
+    </div>
+
     <script src="{{ url_for('static', filename='index.js') }}"></script>
     <script>
       async function syncTimeline() {
@@ -889,6 +918,12 @@
           }
           if (d.theme === "day") document.body.classList.add("day");
           else document.body.classList.remove("day");
+          if (d.playground) {
+            document.getElementById('pg-toolbar').style.display = 'block';
+            initPlayground();
+          } else {
+            document.getElementById('pg-toolbar').style.display = 'none';
+          }
           if (d.name) document.getElementById('about-name').textContent = d.name;
           if (d.email) {
             const emailEl = document.getElementById('contact-email');
@@ -1310,136 +1345,199 @@
           }
         });
 
-      // ── ACCENT COLOR PICKER ───────────────────────────────────────────
-      (function () {
-        const root       = document.documentElement;
-        const STORAGE_KEY = 'utk_accent_v2';
-        let   currentHue = 28; // default orange hue
+      // ── PLAYGROUND ───────────────────────────────────────────────────
+      let _playgroundInited = false;
+      function initPlayground() {
+        if (_playgroundInited) return;
+        _playgroundInited = true;
 
+        const root = document.documentElement;
+        const STORAGE_KEY = 'utk_pg_v1';
+
+        // ── toolbar toggle ──
+        const trigger = document.getElementById('pg-trigger');
+        const panel   = document.getElementById('pg-panel');
+        trigger.addEventListener('click', () => panel.classList.toggle('open'));
+        document.addEventListener('click', (e) => {
+          if (!e.target.closest('#pg-toolbar')) panel.classList.remove('open');
+        });
+
+        // ── color picker ──
+        let currentHue = 28;
         const sbCanvas = document.getElementById('picker-canvas');
         const hCanvas  = document.getElementById('hue-strip');
-        if (!sbCanvas || !hCanvas) return;
         const sbCtx = sbCanvas.getContext('2d');
         const hCtx  = hCanvas.getContext('2d');
 
-        // ── draw saturation/brightness square for a given hue ──
         function drawSB(hue) {
           const W = sbCanvas.width, H = sbCanvas.height;
-          // white → hue horizontal gradient
-          const gradH = sbCtx.createLinearGradient(0, 0, W, 0);
-          gradH.addColorStop(0,   'white');
-          gradH.addColorStop(1,   `hsl(${hue},100%,50%)`);
-          sbCtx.fillStyle = gradH;
-          sbCtx.fillRect(0, 0, W, H);
-          // transparent → black vertical gradient
-          const gradV = sbCtx.createLinearGradient(0, 0, 0, H);
-          gradV.addColorStop(0,   'rgba(0,0,0,0)');
-          gradV.addColorStop(1,   'rgba(0,0,0,1)');
-          sbCtx.fillStyle = gradV;
-          sbCtx.fillRect(0, 0, W, H);
+          const gh = sbCtx.createLinearGradient(0,0,W,0);
+          gh.addColorStop(0, 'white'); gh.addColorStop(1, `hsl(${hue},100%,50%)`);
+          sbCtx.fillStyle = gh; sbCtx.fillRect(0,0,W,H);
+          const gv = sbCtx.createLinearGradient(0,0,0,H);
+          gv.addColorStop(0,'rgba(0,0,0,0)'); gv.addColorStop(1,'rgba(0,0,0,1)');
+          sbCtx.fillStyle = gv; sbCtx.fillRect(0,0,W,H);
         }
-
-        // ── draw hue strip ──
         function drawHue() {
           const W = hCanvas.width, H = hCanvas.height;
-          const grad = hCtx.createLinearGradient(0, 0, W, 0);
-          for (let i = 0; i <= 360; i += 30)
-            grad.addColorStop(i / 360, `hsl(${i},100%,50%)`);
-          hCtx.fillStyle = grad;
-          hCtx.fillRect(0, 0, W, H);
+          const g = hCtx.createLinearGradient(0,0,W,0);
+          for (let i=0;i<=360;i+=30) g.addColorStop(i/360,`hsl(${i},100%,50%)`);
+          hCtx.fillStyle = g; hCtx.fillRect(0,0,W,H);
         }
-
-        // ── convert rgb array → hex ──
-        function rgbToHex(r, g, b) {
-          return '#' + [r, g, b].map(v => v.toString(16).padStart(2, '0')).join('');
+        function rgbToHex(r,g,b) {
+          return '#'+[r,g,b].map(v=>v.toString(16).padStart(2,'0')).join('');
         }
-
-        // ── lighten a hex color for accent2 ──
-        function lighten(hex, amount = 40) {
-          const r = Math.min(255, parseInt(hex.slice(1,3),16) + amount);
-          const g = Math.min(255, parseInt(hex.slice(3,5),16) + amount);
-          const b = Math.min(255, parseInt(hex.slice(5,7),16) + amount);
-          return rgbToHex(r, g, b);
+        function lighten(hex, a=40) {
+          const r=Math.min(255,parseInt(hex.slice(1,3),16)+a);
+          const g=Math.min(255,parseInt(hex.slice(3,5),16)+a);
+          const b=Math.min(255,parseInt(hex.slice(5,7),16)+a);
+          return rgbToHex(r,g,b);
         }
-
-        // ── apply color to CSS vars ──
         function applyColor(hex) {
-          const r = parseInt(hex.slice(1,3),16);
-          const g = parseInt(hex.slice(3,5),16);
-          const b = parseInt(hex.slice(5,7),16);
-          root.style.setProperty('--accent',  hex);
+          const r=parseInt(hex.slice(1,3),16), g=parseInt(hex.slice(3,5),16), b=parseInt(hex.slice(5,7),16);
+          root.style.setProperty('--accent', hex);
           root.style.setProperty('--accent2', lighten(hex));
-          root.style.setProperty('--glow',    `rgba(${r},${g},${b},0.35)`);
+          root.style.setProperty('--glow', `rgba(${r},${g},${b},0.35)`);
         }
-
-        // ── draw cursor dot on SB canvas ──
-        let sbCursor = { x: sbCanvas.width * 0.7, y: sbCanvas.height * 0.3 };
+        let sbCursor = { x: sbCanvas.width*0.7, y: sbCanvas.height*0.3 };
         function drawCursor() {
           drawSB(currentHue);
-          sbCtx.beginPath();
-          sbCtx.arc(sbCursor.x, sbCursor.y, 6, 0, Math.PI * 2);
-          sbCtx.strokeStyle = '#fff';
-          sbCtx.lineWidth = 2;
-          sbCtx.stroke();
+          sbCtx.beginPath(); sbCtx.arc(sbCursor.x, sbCursor.y, 6, 0, Math.PI*2);
+          sbCtx.strokeStyle='#fff'; sbCtx.lineWidth=2; sbCtx.stroke();
         }
-
-        // ── pick color from SB canvas at cursor pos ──
-        function pickSB(x, y) {
-          x = Math.max(0, Math.min(sbCanvas.width  - 1, x));
-          y = Math.max(0, Math.min(sbCanvas.height - 1, y));
-          sbCursor = { x, y };
-          drawCursor();
-          const [r, g, b] = sbCtx.getImageData(x, y, 1, 1).data;
-          const hex = rgbToHex(r, g, b);
-          applyColor(hex);
-          localStorage.setItem(STORAGE_KEY, JSON.stringify({ hex }));
+        function pickSB(x,y) {
+          x=Math.max(0,Math.min(sbCanvas.width-1,x)); y=Math.max(0,Math.min(sbCanvas.height-1,y));
+          sbCursor={x,y}; drawCursor();
+          const [r,g,b] = sbCtx.getImageData(x,y,1,1).data;
+          const hex = rgbToHex(r,g,b); applyColor(hex);
+          save({ hex });
         }
-
-        // ── pick hue from hue strip ──
         function pickHue(x) {
-          x = Math.max(0, Math.min(hCanvas.width - 1, x));
-          currentHue = Math.round((x / hCanvas.width) * 360);
-          drawCursor();
-          pickSB(sbCursor.x, sbCursor.y);
+          x=Math.max(0,Math.min(hCanvas.width-1,x));
+          currentHue=Math.round((x/hCanvas.width)*360);
+          drawCursor(); pickSB(sbCursor.x, sbCursor.y);
         }
-
-        // ── drag helpers ──
         function getPos(canvas, e) {
-          const rect = canvas.getBoundingClientRect();
-          const touch = e.touches?.[0] || e;
-          return {
-            x: (touch.clientX - rect.left) * (canvas.width  / rect.width),
-            y: (touch.clientY - rect.top)  * (canvas.height / rect.height),
-          };
+          const rect=canvas.getBoundingClientRect(), t=e.touches?.[0]||e;
+          return { x:(t.clientX-rect.left)*(canvas.width/rect.width), y:(t.clientY-rect.top)*(canvas.height/rect.height) };
         }
-
         function bindDrag(canvas, onMove) {
-          let active = false;
-          const start = (e) => { active = true; const p = getPos(canvas, e); onMove(p.x, p.y); e.preventDefault(); };
-          const move  = (e) => { if (!active) return; const p = getPos(canvas, e); onMove(p.x, p.y); e.preventDefault(); };
-          const end   = () => { active = false; };
-          canvas.addEventListener('mousedown',  start);
-          canvas.addEventListener('mousemove',  move);
-          canvas.addEventListener('touchstart', start, { passive: false });
-          canvas.addEventListener('touchmove',  move,  { passive: false });
-          window.addEventListener('mouseup',   end);
-          window.addEventListener('touchend',  end);
+          let active=false;
+          const start=(e)=>{active=true; const p=getPos(canvas,e); onMove(p.x,p.y); e.preventDefault();};
+          const move=(e)=>{if(!active)return; const p=getPos(canvas,e); onMove(p.x,p.y); e.preventDefault();};
+          canvas.addEventListener('mousedown',start); canvas.addEventListener('mousemove',move);
+          canvas.addEventListener('touchstart',start,{passive:false}); canvas.addEventListener('touchmove',move,{passive:false});
+          window.addEventListener('mouseup',()=>{active=false;}); window.addEventListener('touchend',()=>{active=false;});
+        }
+        bindDrag(sbCanvas,(x,y)=>pickSB(x,y));
+        bindDrag(hCanvas,(x)=>pickHue(x));
+        drawHue(); drawCursor();
+
+        // ── sim type ──
+        const simConfigs = {
+          pyro:  { count:120, speed:0.6, color:'255,120,40',  shape:'spark'  },
+          fluid: { count:80,  speed:0.3, color:'40,160,255', shape:'drop'   },
+          rbd:   { count:60,  speed:0.9, color:'180,180,180', shape:'chunk'  },
+        };
+        let currentSim = 'pyro';
+        document.getElementById('pg-sim-btns').addEventListener('click', (e) => {
+          const btn = e.target.closest('.pg-btn'); if(!btn) return;
+          currentSim = btn.dataset.sim;
+          document.querySelectorAll('#pg-sim-btns .pg-btn').forEach(b=>b.classList.toggle('active', b===btn));
+          applySimToParticles(simConfigs[currentSim]);
+          save({ sim: currentSim });
+        });
+        function applySimToParticles(cfg) {
+          // expose config on window so index.js particle loop can read it
+          window._pgSim = cfg;
         }
 
-        bindDrag(sbCanvas, (x, y) => pickSB(x, y));
-        bindDrag(hCanvas,  (x)    => pickHue(x));
+        // ── render pass ──
+        const passFilters = {
+          beauty:   '',
+          diffuse:  'saturate(0) brightness(1.1)',
+          emission: 'brightness(0) contrast(20) saturate(3) hue-rotate(0deg)',
+          depth:    'grayscale(1) contrast(1.4) brightness(0.8)',
+        };
+        let currentPass = 'beauty';
+        document.getElementById('pg-pass-btns').addEventListener('click', (e) => {
+          const btn = e.target.closest('.pg-btn'); if(!btn) return;
+          currentPass = btn.dataset.pass;
+          document.querySelectorAll('#pg-pass-btns .pg-btn').forEach(b=>b.classList.toggle('active', b===btn));
+          document.querySelectorAll('.wc-thumb, .still-item img, .blog-thumb').forEach(img => {
+            img.style.filter = passFilters[currentPass];
+          });
+          save({ pass: currentPass });
+        });
 
-        // ── init ──
-        drawHue();
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          try {
-            const { hex } = JSON.parse(saved);
-            applyColor(hex);
-          } catch(e) {}
+        // ── monitor mode ──
+        let crtOverlay = null;
+        let grainInterval = null;
+        function clearMonitor() {
+          if (crtOverlay) { crtOverlay.remove(); crtOverlay = null; }
+          if (grainInterval) { clearInterval(grainInterval); grainInterval = null; }
+          document.body.style.filter = '';
         }
-        drawCursor();
-      })();
+        function applyCRT() {
+          clearMonitor();
+          crtOverlay = document.createElement('div');
+          crtOverlay.id = 'crt-overlay';
+          document.body.appendChild(crtOverlay);
+          document.body.style.filter = 'contrast(1.05) brightness(0.97)';
+        }
+        function applyGrain() {
+          clearMonitor();
+          const canvas = document.createElement('canvas');
+          canvas.id = 'grain-canvas';
+          canvas.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:99997;opacity:0.06;';
+          document.body.appendChild(canvas);
+          crtOverlay = canvas;
+          function drawGrain() {
+            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+            const ctx = canvas.getContext('2d');
+            const img = ctx.createImageData(canvas.width, canvas.height);
+            for (let i=0; i<img.data.length; i+=4) {
+              const v = Math.random()*255|0;
+              img.data[i]=img.data[i+1]=img.data[i+2]=v; img.data[i+3]=255;
+            }
+            ctx.putImageData(img,0,0);
+          }
+          drawGrain();
+          grainInterval = setInterval(drawGrain, 80);
+        }
+        document.getElementById('pg-crt-btns').addEventListener('click', (e) => {
+          const btn = e.target.closest('.pg-btn'); if(!btn) return;
+          const mode = btn.dataset.crt;
+          document.querySelectorAll('#pg-crt-btns .pg-btn').forEach(b=>b.classList.toggle('active', b===btn));
+          if (mode==='crt') applyCRT();
+          else if (mode==='grain') applyGrain();
+          else clearMonitor();
+          save({ crt: mode });
+        });
+
+        // ── persist & restore ──
+        let _state = {};
+        function save(patch) {
+          Object.assign(_state, patch);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(_state));
+        }
+        try {
+          const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '{}');
+          if (saved.hex) applyColor(saved.hex);
+          if (saved.sim) {
+            currentSim = saved.sim;
+            document.querySelectorAll('#pg-sim-btns .pg-btn').forEach(b=>b.classList.toggle('active', b.dataset.sim===saved.sim));
+            applySimToParticles(simConfigs[saved.sim]);
+          }
+          if (saved.pass) {
+            currentPass = saved.pass;
+            document.querySelectorAll('#pg-pass-btns .pg-btn').forEach(b=>b.classList.toggle('active', b.dataset.pass===saved.pass));
+          }
+          if (saved.crt === 'crt') applyCRT();
+          else if (saved.crt === 'grain') applyGrain();
+          _state = saved;
+        } catch(e) {}
+      }
 
       loadRatings();
       initStarRating();
