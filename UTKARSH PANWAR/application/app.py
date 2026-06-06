@@ -163,19 +163,19 @@ def seed():
 
     if work_col.count_documents({}) == 0:
         work_col.insert_many([
-            {'order': 0, 'num': '01', 'vimeo': '894517786?h=e09950ed39', 'thumb': 'IMAGE/1.jpg',
+            {'order': 0, 'num': '01', 'vimeo': '894517786?h=e09950ed39', 'thumb': 'IMAGE/PROJECTS/1.jpg',
              'title': 'Houdini Burning Tower', 'tags': ['FX', 'Houdini', 'Pyro'],
              'desc': 'A large-scale fire and destruction simulation built entirely in Houdini — pyro, rigid body dynamics, and custom shading for a cinematic result.',
              'link': 'https://utkarshpanwar11.artstation.com/projects/rJZ3mm'},
-            {'order': 1, 'num': '02', 'vimeo': '807377032?h=685092efbc', 'thumb': 'IMAGE/2.jpg',
+            {'order': 1, 'num': '02', 'vimeo': '807377032?h=685092efbc', 'thumb': 'IMAGE/PROJECTS/2.jpg',
              'title': 'Melting Statue', 'tags': ['FX', 'Simulation', 'FLIP'],
              'desc': 'A fluid simulation of a stone statue melting under extreme heat — combining FLIP fluids, surface tension, and viscosity controls in Houdini.',
              'link': 'https://utkarshpanwar11.artstation.com/projects/zPPlbw'},
-            {'order': 2, 'num': '03', 'vimeo': '894519229?h=f10b4f3753', 'thumb': 'IMAGE/3.jpg',
+            {'order': 2, 'num': '03', 'vimeo': '894519229?h=f10b4f3753', 'thumb': 'IMAGE/PROJECTS/3.jpg',
              'title': 'Houdini Destruction', 'tags': ['FX', 'Destruction', 'RBD'],
              'desc': 'Procedural building destruction using Voronoi fracturing, constraint networks, and debris systems — fully art-directable and production-ready.',
              'link': 'https://utkarshpanwar11.artstation.com/projects/ob20dL'},
-            {'order': 3, 'num': '04', 'vimeo': '836954122?h=351a362af3', 'thumb': 'IMAGE/4.png',
+            {'order': 3, 'num': '04', 'vimeo': '836954122?h=351a362af3', 'thumb': 'IMAGE/PROJECTS/4.png',
              'title': 'Clouds', 'tags': ['VFX', 'Houdini', 'Volumes'],
              'desc': "Volumetric cloud simulation using Houdini's sparse pyro solver — achieving photorealistic cumulus formations with full lighting and shading control.",
              'link': ''},
@@ -201,7 +201,7 @@ def seed():
 
     if stills_col is not None and stills_col.count_documents({}) == 0:
         stills_col.insert_many([
-            {'url': f'/static/PORTFOLIO/IMG ({i}).jpg', 'caption': f'Still {i}', 'order': i - 1}
+            {'url': f'/static/IMAGE/STILLS/IMG ({i}).jpg', 'caption': f'Still {i}', 'order': i - 1}
             for i in range(1, 10)
         ])
         logger.info("Seeded Stills data")
