@@ -123,12 +123,12 @@
             <div id="profile-glow"></div>
           </div>
           <div id="about-text">
-            <div id="about-name">Utkarsh Panwar</div>
+            <div id="about-name">{{ about.get('name', 'Utkarsh Panwar') }}</div>
             <div id="about-role">{{ about.get('role', 'FX TD · DNEG') }}</div>
           </div>
         </div>
         <div id="about-right">
-          <h2 class="section-heading reveal">
+          <h2 class="section-heading reveal" id="about-heading">
             Crafting Visual <em>Wonders</em>
           </h2>
           <div id="about-cards">
@@ -158,66 +158,13 @@
       <div class="section-label reveal">WORK</div>
       <h2 class="section-heading reveal">Personal <em>Projects</em></h2>
       <div id="tag-filter"></div>
-      <div id="work-grid">
-        {% for w in work %}
-        <div class="work-card reveal" data-vimeo="{{ w.vimeo }}">
-          <div class="wc-media">
-            <img
-              src="{% if w.thumb.startswith('http') %}{{ w.thumb }}{% else %}{{ url_for('static', filename=w.thumb) }}{% endif %}"
-              class="wc-thumb"
-              alt="{{ w.title }}"
-            />
-            <div class="wc-play">
-              <button class="wc-play-btn" aria-label="Play">
-                <svg viewBox="0 0 24 24" width="32" height="32">
-                  <path d="M8 5v14l11-7z" fill="currentColor" />
-                </svg>
-              </button>
-            </div>
-            <button class="wc-close" aria-label="Close video">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="wc-info">
-            <div class="wc-num">{{ w.num }}</div>
-            <h3 class="wc-title">{{ w.title }}</h3>
-            <p class="wc-desc">{{ w.desc }}</p>
-            <div class="wc-tags">
-              {% for tag in w.get('tags', []) %}<span>{{ tag }}</span>{% endfor
-              %}
-            </div>
-            {% if w.link %}
-            <a
-              href="{{ w.link }}"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="wc-link"
-            >
-              View on ArtStation
-              <i class="fas fa-arrow-up-right-from-square"></i>
-            </a>
-            {% endif %}
-          </div>
-        </div>
-        {% endfor %}
-      </div>
+      <div id="work-grid"></div>
 
       <!-- STILLS GALLERY -->
       <div id="S6">
         <div class="section-label reveal">STILLS</div>
         <h2 class="section-heading reveal">Visual <em>Stills</em></h2>
-        <div id="stills-grid">
-          {% for i in range(1, 9) %}
-          <div class="still-item reveal" data-index="{{ i - 1 }}">
-            <img
-              src="{{ url_for('static', filename='PORTFOLIO/IMG (' ~ i ~ ').jpg') }}"
-              alt="Still {{ i }}"
-              loading="lazy"
-            />
-            <div class="still-overlay"><i class="fas fa-expand"></i></div>
-          </div>
-          {% endfor %}
-        </div>
+        <div id="stills-grid"></div>
       </div>
 
       <!-- LIGHTBOX -->
@@ -233,26 +180,6 @@
     <section id="S4">
       <div class="section-label reveal">PORTFOLIO</div>
       <h2 class="section-heading reveal">Featured <em>Credits</em></h2>
-      {% for cat in credits %}
-      <div class="port-category reveal">
-        <div class="port-cat-label">{{ cat.category }}</div>
-        <div class="port-scroll">
-          {% for v in cat.get('videos', []) %}
-          <div class="video-item">
-            <div class="video-wrapper">
-              <iframe
-                src="{{ v.embed }}"
-                frameborder="0"
-                allowfullscreen
-                loading="lazy"
-              ></iframe>
-            </div>
-            <div class="video-caption">{{ v.caption }}</div>
-          </div>
-          {% endfor %}
-        </div>
-      </div>
-      {% endfor %}
     </section>
 
     <!-- CAREER TIMELINE -->
@@ -360,11 +287,11 @@
             <div id="exp-label">Hours of Experience</div>
           </div>
           <div id="contact-info">
-            <a href="mailto:utkarshpanwar01@gmail.com" class="contact-line">
-              <i class="fas fa-envelope"></i> utkarshpanwar01@gmail.com
+            <a href="mailto:utkarshpanwar01@gmail.com" class="contact-line" id="contact-email">
+              <i class="fas fa-envelope"></i><span>utkarshpanwar01@gmail.com</span>
             </a>
-            <a href="tel:+918810669600" class="contact-line">
-              <i class="fas fa-phone"></i> +91 8810669600
+            <a href="tel:+918810669600" class="contact-line" id="contact-phone">
+              <i class="fas fa-phone"></i><span>+91 8810669600</span>
             </a>
           </div>
           <div id="social-links">
@@ -414,7 +341,8 @@
             <input
               type="hidden"
               name="access_key"
-              value="4d6d075d-2a50-465e-acb1-6e59d6039eb6"
+              id="web3forms-key"
+              value=""
             />
             <div class="form-group">
               <input type="text" name="name" placeholder="Your Name" required />
@@ -956,6 +884,39 @@
           }
           if (d.theme === "day") document.body.classList.add("day");
           else document.body.classList.remove("day");
+          if (d.name) document.getElementById('about-name').textContent = d.name;
+          if (d.email) {
+            const emailEl = document.getElementById('contact-email');
+            if (emailEl) {
+              emailEl.href = 'mailto:' + d.email;
+              emailEl.querySelector('span').textContent = d.email;
+            }
+          }
+          if (d.phone) {
+            const phoneEl = document.getElementById('contact-phone');
+            if (phoneEl) {
+              phoneEl.href = 'tel:' + d.phone.replace(/\s/g, '');
+              phoneEl.querySelector('span').textContent = d.phone;
+            }
+          }
+          if (d.showreel) {
+            const iframe = document.getElementById('myVideo2');
+            if (iframe) iframe.dataset.src = d.showreel;
+          }
+          const sl = d.social_links || {};
+          const linkMap = {
+            'one':   sl.linkedin,
+            'two':   sl.vimeo,
+            'three': sl.resume,
+            'four':  sl.artstation,
+            'five':  sl.instagram,
+          };
+          Object.entries(linkMap).forEach(([id, url]) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (url) { el.href = url; el.style.display = ''; }
+            else el.style.display = 'none';
+          });
           if (d.cards && d.cards.length) {
             const wrap = document.getElementById("about-cards");
             wrap.innerHTML = d.cards
@@ -1111,6 +1072,53 @@
           buildTagFilter(items);
         } catch (e) {
           console.warn("Work sync skipped:", e);
+        }
+      }
+
+      async function syncStills() {
+        try {
+          const items = await fetch('/api/stills').then(r => r.json());
+          const grid = document.getElementById('stills-grid');
+          if (!items.length) {
+            document.getElementById('S6').style.display = 'none';
+            return;
+          }
+          grid.innerHTML = items.map((s, i) => `
+            <div class="still-item reveal" data-index="${i}">
+              <img src="${s.url}" alt="${s.caption || 'Still ' + (i + 1)}" loading="lazy" />
+              <div class="still-overlay"><i class="fas fa-expand"></i></div>
+            </div>`).join('');
+          // Override the static lightbox handlers from index.js with dynamic srcs
+          const srcs = items.map(s => s.url);
+          window._stillsSrcs = srcs;
+          window._stillsIndex = 0;
+          const lightbox = document.getElementById('lightbox');
+          const lightboxImg = document.getElementById('lightbox-img');
+          window.openStillLightbox = function(i) {
+            window._stillsIndex = i;
+            lightboxImg.src = srcs[i];
+            lightbox.classList.add('open');
+            document.body.style.overflow = 'hidden';
+          };
+          document.getElementById('lightbox-next').onclick = () => {
+            window._stillsIndex = (window._stillsIndex + 1) % srcs.length;
+            lightboxImg.src = srcs[window._stillsIndex];
+          };
+          document.getElementById('lightbox-prev').onclick = () => {
+            window._stillsIndex = (window._stillsIndex - 1 + srcs.length) % srcs.length;
+            lightboxImg.src = srcs[window._stillsIndex];
+          };
+          document.getElementById('lightbox-close').onclick = () => {
+            lightbox.classList.remove('open');
+            document.body.style.overflow = '';
+          };
+          grid.querySelectorAll('.still-item').forEach((el, i) => {
+            el.addEventListener('click', () => window.openStillLightbox(i));
+            el.style.transitionDelay = (i % 5) * 0.08 + 's';
+            if (typeof revealObserver !== 'undefined') revealObserver.observe(el);
+          });
+        } catch(e) {
+          console.warn('Stills sync skipped:', e);
         }
       }
 
@@ -1307,6 +1315,11 @@
       syncAwards();
       syncBlogs();
       syncLocation();
+      syncStills();
+      fetch('/api/config').then(r => r.json()).then(d => {
+        const k = document.getElementById('web3forms-key');
+        if (k && d.web3forms_key) k.value = d.web3forms_key;
+      }).catch(() => {});
 
       // ── VISITOR NAME PROMPT ────────────────────────────────────────────────────
       (function () {

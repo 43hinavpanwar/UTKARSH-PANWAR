@@ -78,6 +78,7 @@ MONGO_URI    = os.environ.get(
     'mongodb+srv://utkarsh:utk1234@cluster0.koygnga.mongodb.net/?appName=Cluster0'
 )
 MONGO_DB_NAME = os.environ.get('MONGO_DB_NAME', 'utk_portfolio')
+WEB3FORMS_KEY = os.environ.get('WEB3FORMS_KEY', '4d6d075d-2a50-465e-acb1-6e59d6039eb6')
 
 try:
     mongo_client = MongoClient(MONGO_URI, serverSelectionTimeoutMS=5000)
@@ -93,13 +94,18 @@ try:
     blogs_col    = db['blogs']
     timeline_col = db['timeline']
     companies_col = db['companies']
-    ratings_col = db['ratings'] 
+    ratings_col  = db['ratings']
+    stills_col   = db['stills']
     logger.info("✅ MongoDB connected successfully!")
 except Exception as e:
     logger.error(f"❌ MongoDB connection failed: {e}")
-    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = timeline_col = companies_col = ratings_col = None
+    db = about_col = credits_col = work_col = messages_col = visits_col = skills_col = awards_col = blogs_col = timeline_col = companies_col = ratings_col = stills_col = None
 
 atexit.register(lambda: mongo_client.close() if mongo_client is not None else None)
+
+@app.route('/api/config')
+def get_config():
+    return jsonify({'web3forms_key': WEB3FORMS_KEY})
 
 # ── SEED DEFAULT DATA ─────────────────────────────────────────────────────────
 def seed():
@@ -114,6 +120,17 @@ def seed():
             'hero_tag': 'FX TD @ DNEG',
             'hero_desc': 'Versatile Visual Effects Artist — transforming imagination into cinematic reality through Houdini, Nuke & beyond.',
             'exp_hours': 7000,
+            'name': 'Utkarsh Panwar',
+            'email': 'utkarshpanwar01@gmail.com',
+            'phone': '+91 8810669600',
+            'showreel': 'https://player.vimeo.com/video/836954122?h=351a362af3&autoplay=1&title=0&byline=0&portrait=0',
+            'social_links': {
+                'linkedin': 'https://www.linkedin.com/in/utkarsh-panwar/',
+                'vimeo': 'https://vimeo.com/user146712461',
+                'resume': '',
+                'artstation': 'https://www.artstation.com/utkarshpanwar11',
+                'instagram': 'https://www.instagram.com/utkarshpanwar11/',
+            },
             'cards': [
                 {'icon': 'fa-regular fa-user', 'title': 'WHO AM I', 'text': 'VFX artist with 3+ years of studio experience, currently an FX TD at DNEG bringing imagination to life through cutting-edge visual effects.'},
                 {'icon': 'fa-solid fa-tv', 'title': 'WHAT I DO', 'text': 'FX and Compositing — creating realistic simulations in Houdini and integrating them seamlessly in Nuke for cinematic storytelling.'},
@@ -193,6 +210,13 @@ def seed():
             },
         ])
         logger.info("Seeded Companies data")
+
+    if stills_col is not None and stills_col.count_documents({}) == 0:
+        stills_col.insert_many([
+            {'url': f'/static/PORTFOLIO/IMG ({i}).jpg', 'caption': f'Still {i}', 'order': i - 1}
+            for i in range(1, 10)
+        ])
+        logger.info("Seeded Stills data")
 seed()
 
 # ── ONE-TIME MIGRATIONS ───────────────────────────────────────────────────────
@@ -468,7 +492,7 @@ def update_about():
     if about_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
     data    = request.json or {}
-    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location'}
+    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location', 'social_links', 'email', 'phone', 'showreel', 'name'}
     update  = {k: v for k, v in data.items() if k in allowed}
     if not update:
         return jsonify({'error': 'Nothing to update'}), 400
@@ -548,6 +572,23 @@ def delete_credit_video(cat_id, idx):
     videos.pop(idx)
     credits_col.update_one({'_id': oid}, {'$set': {'videos': videos}})
     return jsonify({'status': 'deleted'})
+
+@app.route('/api/admin/credits/<cat_id>/videos/reorder', methods=['POST'])
+@login_required
+def reorder_credit_videos(cat_id):
+    if credits_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(cat_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    order = (request.json or {}).get('order', [])
+    doc = credits_col.find_one({'_id': oid})
+    if not doc:
+        return jsonify({'error': 'Category not found'}), 404
+    videos = doc.get('videos', [])
+    reordered = [videos[i] for i in order if 0 <= i < len(videos)]
+    credits_col.update_one({'_id': oid}, {'$set': {'videos': reordered}})
+    return jsonify({'status': 'reordered'})
 
 # ── ADMIN API — WORK (reorder MUST be before <work_id>) ──────────────────────
 @app.route('/api/admin/work/reorder', methods=['POST'])
@@ -726,6 +767,18 @@ def delete_skill(skill_id):
         return jsonify({'error': 'Invalid id'}), 400
     skills_col.delete_one({'_id': oid})
     return jsonify({'status': 'deleted'})
+
+@app.route('/api/admin/skills/reorder', methods=['POST'])
+@login_required
+def reorder_skills():
+    if skills_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    order = (request.json or {}).get('order', [])
+    for item in order:
+        oid = safe_object_id(item.get('id'))
+        if oid:
+            skills_col.update_one({'_id': oid}, {'$set': {'order': item['order']}})
+    return jsonify({'status': 'reordered'})
 
 @app.route('/api/admin/available', methods=['POST'])
 @login_required
@@ -1073,20 +1126,76 @@ def delete_company(company_id):
 @app.route('/api/admin/companies/reorder', methods=['POST'])
 @login_required
 def reorder_companies():
-    """Reorder companies (for drag-and-drop)"""
     if companies_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
-    
     order_data = (request.json or {}).get('order', [])
-    
     for item in order_data:
         oid = safe_object_id(item.get('id'))
         if oid:
-            companies_col.update_one(
-                {'_id': oid}, 
-                {'$set': {'order': item.get('order', 0)}}
-            )
-    
+            companies_col.update_one({'_id': oid}, {'$set': {'order': item.get('order', 0)}})
+    return jsonify({'status': 'reordered'})
+
+# ── STILLS API ────────────────────────────────────────────────────────────────
+@app.route('/api/stills')
+def get_stills():
+    if stills_col is None:
+        return jsonify([]), 500
+    items = list(stills_col.find({}).sort('order', 1))
+    for i in items:
+        i['_id'] = str(i['_id'])
+    return jsonify(items)
+
+@app.route('/api/admin/stills', methods=['POST'])
+@login_required
+def add_still():
+    if stills_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    data    = request.json or {}
+    url     = sanitize(data.get('url') or '', max_len=500)
+    caption = sanitize(data.get('caption') or '', max_len=200)
+    if not url:
+        return jsonify({'error': 'url required'}), 400
+    top   = stills_col.find_one(sort=[('order', -1)])
+    order = (top['order'] + 1) if top else 0
+    result = stills_col.insert_one({'url': url, 'caption': caption, 'order': order})
+    return jsonify({'status': 'added', '_id': str(result.inserted_id)})
+
+@app.route('/api/admin/stills/<still_id>', methods=['PUT'])
+@login_required
+def update_still(still_id):
+    if stills_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(still_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    data = request.json or {}
+    stills_col.update_one({'_id': oid}, {'$set': {
+        'url':     sanitize(data.get('url') or '', max_len=500),
+        'caption': sanitize(data.get('caption') or '', max_len=200),
+    }})
+    return jsonify({'status': 'updated'})
+
+@app.route('/api/admin/stills/<still_id>', methods=['DELETE'])
+@login_required
+def delete_still(still_id):
+    if stills_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    oid = safe_object_id(still_id)
+    if not oid:
+        return jsonify({'error': 'Invalid id'}), 400
+    stills_col.delete_one({'_id': oid})
+    return jsonify({'status': 'deleted'})
+
+@app.route('/api/admin/stills/reorder', methods=['POST'])
+@login_required
+def reorder_stills():
+    if stills_col is None:
+        return jsonify({'error': 'DB unavailable'}), 500
+    order = (request.json or {}).get('order', [])
+    for item in order:
+        oid = safe_object_id(item.get('id'))
+        if oid:
+            stills_col.update_one({'_id': oid}, {'$set': {'order': item['order']}})
     return jsonify({'status': 'reordered'})
 
 # ── RUN ───────────────────────────────────────────────────────────────────────

@@ -228,32 +228,15 @@ function closeShowreel() {
 B1.addEventListener("click", openShowreel);
 showreelModal.addEventListener("click", (e) => { if (e.target === showreelModal) closeShowreel(); });
 
-// ── STILLS LIGHTBOX ──
+// ── STILLS LIGHTBOX ── (wired dynamically by syncStills in index.html)
 const lightbox = document.getElementById("lightbox");
 const lightboxImg = document.getElementById("lightbox-img");
-const stillItems = [...document.querySelectorAll(".still-item")];
-const srcs = stillItems.map(el => el.querySelector("img").src);
-let currentIndex = 0;
-
-function openLightbox(i) {
-  currentIndex = i;
-  lightboxImg.src = srcs[i];
-  lightbox.classList.add("open");
-  document.body.style.overflow = "hidden";
-}
-function closeLightbox() {
-  lightbox.classList.remove("open");
-  lightboxImg.src = "";
-  document.body.style.overflow = "";
-}
-function showNext() { currentIndex = (currentIndex + 1) % srcs.length; lightboxImg.src = srcs[currentIndex]; }
-function showPrev() { currentIndex = (currentIndex - 1 + srcs.length) % srcs.length; lightboxImg.src = srcs[currentIndex]; }
-
-stillItems.forEach((item, i) => item.addEventListener("click", () => openLightbox(i)));
-document.getElementById("lightbox-close").addEventListener("click", closeLightbox);
-document.getElementById("lightbox-next").addEventListener("click", showNext);
-document.getElementById("lightbox-prev").addEventListener("click", showPrev);
-lightbox.addEventListener("click", (e) => { if (e.target === lightbox) closeLightbox(); });
+lightbox.addEventListener("click", (e) => {
+  if (e.target === lightbox) {
+    lightbox.classList.remove("open");
+    document.body.style.overflow = "";
+  }
+});
 
 // ── STILLS MOBILE DOTS INDICATOR ──
 (function () {
@@ -316,10 +299,22 @@ document.querySelectorAll(".wc-close").forEach((btn) => {
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
     if (showreelModal.classList.contains("open")) closeShowreel();
-    else if (lightbox.classList.contains("open")) closeLightbox();
+    else if (lightbox.classList.contains("open")) {
+      lightbox.classList.remove("open");
+      document.body.style.overflow = "";
+    }
   }
-  if (e.key === "ArrowRight" && lightbox.classList.contains("open")) showNext();
-  if (e.key === "ArrowLeft" && lightbox.classList.contains("open")) showPrev();
+  if (lightbox.classList.contains("open") && window._stillsSrcs) {
+    const img = document.getElementById("lightbox-img");
+    if (e.key === "ArrowRight") {
+      window._stillsIndex = (window._stillsIndex + 1) % window._stillsSrcs.length;
+      img.src = window._stillsSrcs[window._stillsIndex];
+    }
+    if (e.key === "ArrowLeft") {
+      window._stillsIndex = (window._stillsIndex - 1 + window._stillsSrcs.length) % window._stillsSrcs.length;
+      img.src = window._stillsSrcs[window._stillsIndex];
+    }
+  }
   if (e.key === "f" || e.key === "F") {
     if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
     else document.exitFullscreen?.();

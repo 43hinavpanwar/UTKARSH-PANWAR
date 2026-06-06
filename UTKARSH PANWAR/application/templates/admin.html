@@ -639,6 +639,7 @@
             margin-bottom: 1.5rem;
           "
         ></div>
+        <p style="font-size:0.75rem;color:#666;margin-bottom:0.5rem;">Drag to reorder</p>
         <div class="add-section">
           <div class="form-grid">
             <div class="field">
@@ -800,6 +801,10 @@
             <input id="a-hero_tag" placeholder="FX TD @ DNEG" />
           </div>
           <div class="field">
+            <label><i class="fas fa-user"></i> Full Name</label>
+            <input id="a-name" placeholder="Utkarsh Panwar" />
+          </div>
+          <div class="field">
             <label><i class="fas fa-briefcase"></i> Role Title</label>
             <input id="a-role" placeholder="FX TD · DNEG" />
           </div>
@@ -813,6 +818,18 @@
               id="a-profile_url"
               placeholder="https://example.com/photo.jpg"
             />
+          </div>
+          <div class="field">
+            <label><i class="fas fa-envelope"></i> Email</label>
+            <input id="a-email" placeholder="utkarshpanwar01@gmail.com" />
+          </div>
+          <div class="field">
+            <label><i class="fas fa-phone"></i> Phone</label>
+            <input id="a-phone" placeholder="+91 8810669600" />
+          </div>
+          <div class="field">
+            <label><i class="fas fa-film"></i> Showreel Vimeo URL</label>
+            <input id="a-showreel" placeholder="https://player.vimeo.com/video/..." />
           </div>
           <div class="field">
             <label><i class="fas fa-map-marker-alt"></i> City Name</label>
@@ -852,6 +869,38 @@
             <span>About Cards</span>
           </div>
           <div id="about-cards-wrap" class="cards-grid"></div>
+          <button class="btn btn-success" onclick="addAboutCard()" style="margin-top:1rem;">
+            <i class="fas fa-plus-circle"></i> Add Card
+          </button>
+        </div>
+
+        <div style="margin-top: 1.5rem">
+          <div class="section-title" style="margin-bottom: 1rem">
+            <i class="fas fa-share-alt"></i>
+            <span>Social &amp; Resume Links</span>
+          </div>
+          <div class="form-grid">
+            <div class="field">
+              <label><i class="fa-brands fa-linkedin"></i> LinkedIn URL</label>
+              <input id="a-linkedin" placeholder="https://www.linkedin.com/in/..." />
+            </div>
+            <div class="field">
+              <label><i class="fa-brands fa-vimeo"></i> Vimeo URL</label>
+              <input id="a-vimeo" placeholder="https://vimeo.com/..." />
+            </div>
+            <div class="field">
+              <label><i class="fa-brands fa-artstation"></i> ArtStation URL</label>
+              <input id="a-artstation" placeholder="https://www.artstation.com/..." />
+            </div>
+            <div class="field">
+              <label><i class="fa-brands fa-instagram"></i> Instagram URL</label>
+              <input id="a-instagram" placeholder="https://www.instagram.com/..." />
+            </div>
+            <div class="field">
+              <label><i class="fa-regular fa-file"></i> Resume Link (Google Drive or PDF URL)</label>
+              <input id="a-resume" placeholder="https://drive.google.com/file/d/..." />
+            </div>
+          </div>
         </div>
 
         <div class="field">
@@ -1089,6 +1138,31 @@
         </div>
         <p class="msg" id="work-msg"></p>
       </section>
+      <!-- STILLS SECTION -->
+      <section class="section">
+        <div class="section-title">
+          <i class="fas fa-images"></i>
+          <span>Stills Gallery</span>
+          <span style="font-size: 0.75rem; color: #888; margin-left: auto">Drag to reorder</span>
+        </div>
+        <div id="stills-wrap" class="cards-grid" style="margin-bottom: 1.5rem"></div>
+        <div class="add-section">
+          <div class="form-grid">
+            <div class="field">
+              <label>Image URL</label>
+              <input id="st-url" placeholder="https://... or /static/PORTFOLIO/IMG (1).jpg" />
+            </div>
+            <div class="field">
+              <label>Caption (optional)</label>
+              <input id="st-caption" placeholder="Behind the scenes" />
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="addStill()">
+            <i class="fas fa-plus-circle"></i> Add Still
+          </button>
+        </div>
+        <p class="msg" id="stills-msg"></p>
+      </section>
     </main>
 
     <script>
@@ -1122,13 +1196,23 @@
         const d = await api("/api/about");
         document.getElementById("a-hero_tag").value = d.hero_tag || "";
         document.getElementById("a-hero_desc").value = d.hero_desc || "";
+        document.getElementById("a-name").value = d.name || "";
         document.getElementById("a-role").value = d.role || "";
         document.getElementById("a-exp_hours").value = d.exp_hours || "";
         document.getElementById("a-profile_url").value = d.profile_url || "";
+        document.getElementById("a-email").value = d.email || "";
+        document.getElementById("a-phone").value = d.phone || "";
+        document.getElementById("a-showreel").value = d.showreel || "";
         const loc = d.location || {};
         document.getElementById("a-loc-city").value = loc.city || "";
         document.getElementById("a-loc-lat").value = loc.lat || "";
         document.getElementById("a-loc-lon").value = loc.lon || "";
+        const s = d.social_links || {};
+        document.getElementById("a-linkedin").value = s.linkedin || "";
+        document.getElementById("a-vimeo").value = s.vimeo || "";
+        document.getElementById("a-artstation").value = s.artstation || "";
+        document.getElementById("a-instagram").value = s.instagram || "";
+        document.getElementById("a-resume").value = s.resume || "";
         aboutCards = d.cards || [];
         renderAboutCards();
       }
@@ -1168,10 +1252,17 @@
         renderAboutCards();
       }
 
+      function addAboutCard() {
+        aboutCards.push({ icon: 'fa-solid fa-star', title: '', text: '' });
+        renderAboutCards();
+        document.getElementById('about-cards-wrap').lastElementChild?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+
       async function saveAbout() {
         const payload = {
           hero_tag: document.getElementById("a-hero_tag").value,
           hero_desc: document.getElementById("a-hero_desc").value,
+          name:     document.getElementById("a-name").value.trim(),
           role: document.getElementById("a-role").value,
           exp_hours:
             parseInt(document.getElementById("a-exp_hours").value) || 0,
@@ -1180,6 +1271,16 @@
             city: document.getElementById("a-loc-city").value.trim(),
             lat: parseFloat(document.getElementById("a-loc-lat").value) || null,
             lon: parseFloat(document.getElementById("a-loc-lon").value) || null,
+          },
+          email:    document.getElementById("a-email").value.trim(),
+          phone:    document.getElementById("a-phone").value.trim(),
+          showreel: document.getElementById("a-showreel").value.trim(),
+          social_links: {
+            linkedin:   document.getElementById("a-linkedin").value.trim(),
+            vimeo:      document.getElementById("a-vimeo").value.trim(),
+            artstation: document.getElementById("a-artstation").value.trim(),
+            instagram:  document.getElementById("a-instagram").value.trim(),
+            resume:     document.getElementById("a-resume").value.trim(),
           },
           cards: aboutCards,
         };
@@ -1293,22 +1394,48 @@
             '<p style="color:#666;font-size:0.85rem;">No awards yet.</p>';
           return;
         }
-        wrap.innerHTML = items
-          .map(
-            (a) => `
-    <div style="display:flex;align-items:flex-start;gap:1rem;background:var(--card-bg);border:1px solid var(--card-border);border-radius:8px;padding:1rem;">
-      <i class="fas fa-trophy" style="color:#e8622a;margin-top:0.2rem;flex-shrink:0;"></i>
-      <div style="flex:1;">
-        <div style="font-weight:700;color:var(--text);">${escapeHtml(a.title)}</div>
-        <div style="font-size:0.8rem;color:#888;margin-top:0.2rem;">${escapeHtml(a.org || "")} ${a.year ? "· " + a.year : ""}</div>
-        ${a.desc ? `<div style="font-size:0.82rem;color:#aaa;margin-top:0.4rem;">${escapeHtml(a.desc)}</div>` : ""}
-      </div>
-      <button class="btn btn-danger" onclick="deleteAward('${a._id}')" style="padding:0.35rem 0.6rem;font-size:0.75rem;margin-top:0;">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>`,
-          )
-          .join("");
+        wrap.innerHTML = '';
+        items.forEach((a) => {
+          const div = document.createElement('div');
+          div.className = 'admin-card';
+          div.id = 'award-' + a._id;
+          div.innerHTML = `
+            <div class="card-header">
+              <span class="card-title"><i class="fas fa-trophy"></i> ${escapeHtml(a.title)}</span>
+              <div style="display:flex;gap:0.5rem;">
+                <button class="btn btn-warning" onclick="toggleAwardEdit('${a._id}')" style="margin-top:0;padding:0.35rem 0.7rem;"><i class="fas fa-edit"></i></button>
+                <button class="btn btn-danger" onclick="deleteAward('${a._id}')" style="margin-top:0;padding:0.35rem 0.6rem;"><i class="fas fa-times"></i></button>
+              </div>
+            </div>
+            <div style="font-size:0.8rem;color:#888;">${escapeHtml(a.org || '')} ${a.year ? '· ' + a.year : ''}</div>
+            ${a.desc ? `<div style="font-size:0.82rem;color:#aaa;margin-top:0.4rem;">${escapeHtml(a.desc)}</div>` : ''}
+            <div id="award-edit-${a._id}" style="display:none;margin-top:1rem;">
+              <div class="form-grid">
+                <div class="field"><label>Title</label><input id="awt-${a._id}" value="${escapeHtml(a.title)}" /></div>
+                <div class="field"><label>Organisation</label><input id="awo-${a._id}" value="${escapeHtml(a.org || '')}" /></div>
+                <div class="field"><label>Year</label><input id="awy-${a._id}" value="${escapeHtml(a.year || '')}" /></div>
+              </div>
+              <div class="field" style="margin-bottom:0.75rem;"><label>Description</label><textarea id="awd-${a._id}" rows="2">${escapeHtml(a.desc || '')}</textarea></div>
+              <button class="btn btn-primary" onclick="updateAward('${a._id}')" style="margin-top:0;"><i class="fas fa-save"></i> Save</button>
+            </div>`;
+          wrap.appendChild(div);
+        });
+      }
+
+      function toggleAwardEdit(id) {
+        const el = document.getElementById('award-edit-' + id);
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
+
+      async function updateAward(id) {
+        const r = await api(`/api/admin/awards/${id}`, 'PUT', {
+          title: document.getElementById('awt-' + id).value,
+          org:   document.getElementById('awo-' + id).value,
+          year:  document.getElementById('awy-' + id).value,
+          desc:  document.getElementById('awd-' + id).value,
+        });
+        showMsg('awards-msg', r.error ? '\u274c ' + r.error : '\u2705 Award updated', !!r.error);
+        if (!r.error) loadAwards();
       }
 
       async function addAward() {
@@ -1539,10 +1666,11 @@
         let videosHtml = (cat.videos || [])
           .map(
             (v, i) => `
-    <div class="video-row">
+    <div class="video-row" draggable="true" data-vidx="${i}" style="cursor:grab;">
+      <i class="fas fa-grip-vertical" style="color:#555;flex-shrink:0;cursor:grab;"></i>
       <input value="${escapeHtml(v.embed)}" placeholder="Embed URL" id="ve-${cat._id}-${i}" />
       <input value="${escapeHtml(v.caption)}" placeholder="Caption" id="vc-${cat._id}-${i}" />
-      <button class="btn btn-danger" onclick="deleteVideo('${cat._id}',${i})" style="padding: 0.5rem;">
+      <button class="btn btn-danger" onclick="deleteVideo('${cat._id}',${i})" style="padding: 0.5rem;margin-top:0;">
         <i class="fas fa-times"></i>
       </button>
     </div>
@@ -1567,12 +1695,51 @@
     <div class="video-row" style="margin-top: 1rem;">
       <input id="ne-${cat._id}" placeholder="New embed URL" />
       <input id="nc-${cat._id}" placeholder="Caption" />
-      <button class="btn btn-success" onclick="addVideo('${cat._id}')" style="white-space: nowrap;">
+      <button class="btn btn-success" onclick="addVideo('${cat._id}')" style="white-space: nowrap;margin-top:0;">
         <i class="fas fa-plus"></i> Add Video
       </button>
     </div>
   `;
+        // attach drag-to-reorder on the videos container after innerHTML is set
+        setTimeout(() => enableVideoDrag(cat._id), 0);
         return div;
+      }
+
+      function enableVideoDrag(catId) {
+        const container = document.getElementById('videos-' + catId);
+        if (!container) return;
+        let dragged = null;
+        container.addEventListener('dragstart', (e) => {
+          dragged = e.target.closest('[data-vidx]');
+          setTimeout(() => dragged && (dragged.style.opacity = '0.4'), 0);
+          e.stopPropagation(); // prevent category card drag from firing
+        });
+        container.addEventListener('dragend', (e) => {
+          if (dragged) dragged.style.opacity = '1';
+          dragged = null;
+          saveVideoOrder(catId);
+        });
+        container.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const target = e.target.closest('[data-vidx]');
+          if (target && target !== dragged) {
+            const rect = target.getBoundingClientRect();
+            const after = e.clientY > rect.top + rect.height / 2;
+            container.insertBefore(dragged, after ? target.nextSibling : target);
+          }
+        });
+      }
+
+      async function saveVideoOrder(catId) {
+        const container = document.getElementById('videos-' + catId);
+        if (!container) return;
+        const order = [...container.querySelectorAll('[data-vidx]')].map((el) =>
+          parseInt(el.dataset.vidx)
+        );
+        await api(`/api/admin/credits/${catId}/videos/reorder`, 'POST', { order });
+        showMsg('credits-msg', '✅ Video order saved');
+        loadCredits();
       }
 
       function escapeHtml(str) {
@@ -1895,21 +2062,25 @@
             '<p style="color:#666;font-size:0.85rem;">No skills yet.</p>';
           return;
         }
-        wrap.innerHTML = skills
-          .map(
-            (s) => `
-    <div style="display:flex;align-items:center;gap:0.75rem;background:rgba(15,15,20,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.75rem 1rem;">
-      <span style="flex:1;font-size:0.9rem;color:#fff;font-weight:600;">${escapeHtml(s.name)}</span>
-      <div style="flex:2;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
-        <div style="width:${s.level}%;height:100%;background:linear-gradient(90deg,#e8622a,#ff9a5c);border-radius:2px;"></div>
-      </div>
-      <span style="font-size:0.85rem;color:#e8622a;font-weight:700;width:36px;text-align:right;">${s.level}%</span>
-      <button class="btn btn-danger" onclick="deleteSkill('${s._id}')" style="padding:0.35rem 0.6rem;font-size:0.75rem;">
-        <i class="fas fa-times"></i>
-      </button>
-    </div>`,
-          )
-          .join("");
+        wrap.innerHTML = '';
+        skills.forEach((s) => {
+          const div = document.createElement('div');
+          div.setAttribute('draggable', 'true');
+          div.dataset.id = s._id;
+          div.style.cssText = 'display:flex;align-items:center;gap:0.75rem;background:rgba(15,15,20,0.8);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:0.75rem 1rem;cursor:grab;';
+          div.innerHTML = `
+            <i class="fas fa-grip-vertical" style="color:#555;flex-shrink:0;"></i>
+            <span style="flex:1;font-size:0.9rem;color:#fff;font-weight:600;">${escapeHtml(s.name)}</span>
+            <div style="flex:2;height:4px;background:rgba(255,255,255,0.07);border-radius:2px;overflow:hidden;">
+              <div style="width:${s.level}%;height:100%;background:linear-gradient(90deg,#e8622a,#ff9a5c);border-radius:2px;"></div>
+            </div>
+            <span style="font-size:0.85rem;color:#e8622a;font-weight:700;width:36px;text-align:right;">${s.level}%</span>
+            <button class="btn btn-danger" onclick="deleteSkill('${s._id}')" style="padding:0.35rem 0.6rem;font-size:0.75rem;margin-top:0;">
+              <i class="fas fa-times"></i>
+            </button>`;
+          wrap.appendChild(div);
+        });
+        enableDrag('skills-wrap', '/api/admin/skills/reorder');
       }
 
       async function addSkill() {
@@ -2083,6 +2254,66 @@
         loadRatingsAdmin();
       }
 
+      // STILLS
+      async function loadStills() {
+        const items = await api('/api/stills');
+        const wrap = document.getElementById('stills-wrap');
+        if (!items.length) {
+          wrap.innerHTML = '<p style="color:#666;font-size:0.85rem;">No stills yet.</p>';
+          return;
+        }
+        wrap.innerHTML = '';
+        items.forEach((s) => {
+          const div = document.createElement('div');
+          div.className = 'admin-card';
+          div.id = 'still-' + s._id;
+          div.setAttribute('draggable', 'true');
+          div.dataset.id = s._id;
+          div.innerHTML = `
+            <div class="card-header">
+              <span class="card-title"><i class="fas fa-grip-vertical" style="color:#555;margin-right:0.5rem;cursor:grab;"></i><i class="fas fa-image"></i></span>
+              <button class="btn btn-danger" onclick="deleteStill('${s._id}')" style="margin-top:0;"><i class="fas fa-trash"></i></button>
+            </div>
+            <img src="${escapeHtml(s.url)}" style="width:100%;height:120px;object-fit:cover;border-radius:6px;margin-bottom:0.75rem;" onerror="this.style.display='none'" />
+            <div class="field" style="margin-bottom:0.5rem;"><label>Image URL</label><input id="stu-${s._id}" value="${escapeHtml(s.url)}" /></div>
+            <div class="field" style="margin-bottom:0.75rem;"><label>Caption</label><input id="stc-${s._id}" value="${escapeHtml(s.caption || '')}" /></div>
+            <button class="btn btn-primary" onclick="updateStill('${s._id}')" style="margin-top:0;"><i class="fas fa-save"></i> Save</button>
+          `;
+          wrap.appendChild(div);
+        });
+        enableDrag('stills-wrap', '/api/admin/stills/reorder');
+      }
+
+      async function addStill() {
+        const url = document.getElementById('st-url').value.trim();
+        if (!url) return showMsg('stills-msg', 'Image URL required', true);
+        const r = await api('/api/admin/stills', 'POST', {
+          url,
+          caption: document.getElementById('st-caption').value.trim(),
+        });
+        if (r.error) return showMsg('stills-msg', r.error, true);
+        document.getElementById('st-url').value = '';
+        document.getElementById('st-caption').value = '';
+        showMsg('stills-msg', '✅ Still added');
+        loadStills();
+      }
+
+      async function updateStill(id) {
+        const r = await api(`/api/admin/stills/${id}`, 'PUT', {
+          url:     document.getElementById('stu-' + id).value.trim(),
+          caption: document.getElementById('stc-' + id).value.trim(),
+        });
+        showMsg('stills-msg', r.error ? '❌ ' + r.error : '✅ Still updated', !!r.error);
+        if (!r.error) loadStills();
+      }
+
+      async function deleteStill(id) {
+        if (!confirm('Delete this still?')) return;
+        await api(`/api/admin/stills/${id}`, 'DELETE');
+        document.getElementById('still-' + id)?.remove();
+        showMsg('stills-msg', '✅ Still deleted');
+      }
+
       // Initialize — must be last, after all functions are defined
       loadAbout();
       loadRatingsAdmin();
@@ -2097,6 +2328,7 @@
       loadInbox();
       loadVisitStats();
       loadVisits();
+      loadStills();
     </script>
   </body>
 </html>
