@@ -182,23 +182,6 @@ def seed():
         ])
         logger.info("Seeded Work data")
 
-    if companies_col.count_documents({}) == 0:
-        companies_col.insert_many([
-            {
-                'name': 'DNEG',
-                'img_url': 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTYtPVowYSiIkaYTkW_buegniOVF3VlP76nEg&s',  # Replace with actual logo URL
-                'order': 0,
-                'created_at': datetime.now(timezone.utc)
-            },
-            {
-                'name': 'Nicklodean',
-                'img_url': 'https://upload.wikimedia.org/wikipedia/commons/7/71/Nickelodeon_2023_logo.svg',  # Replace with actual logo URL
-                'order': 1,
-                'created_at': datetime.now(timezone.utc)
-            },
-        ])
-        logger.info("Seeded Companies data")
-
     if stills_col is not None and stills_col.count_documents({}) == 0:
         stills_col.insert_many([
             {'url': f'/static/IMAGE/STILLS/IMG ({i}).jpg', 'caption': f'Still {i}', 'order': i - 1}
