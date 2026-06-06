@@ -188,6 +188,20 @@ body {
     transform: scaleX(1);
   }
 }
+#preloader-pct {
+  position: absolute;
+  top: 2.4rem;
+  right: 3rem;
+  font-family: var(--font2);
+  font-size: clamp(1.2rem, 2vw, 1.6rem);
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  z-index: 1;
+  opacity: 0.9;
+  transition: opacity 0.3s;
+}
+
 #developer-credit {
   position: absolute;
   bottom: 3rem;

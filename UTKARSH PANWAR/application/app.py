@@ -120,7 +120,6 @@ def seed():
             'hero_tag': 'FX TD @ DNEG',
             'hero_desc': 'Versatile Visual Effects Artist — transforming imagination into cinematic reality through Houdini, Nuke & beyond.',
             'exp_hours': 7000,
-            'name': 'Utkarsh Panwar',
             'email': 'utkarshpanwar01@gmail.com',
             'phone': '+91 8810669600',
             'showreel': 'https://player.vimeo.com/video/836954122?h=351a362af3&autoplay=1&title=0&byline=0&portrait=0',
@@ -492,7 +491,7 @@ def update_about():
     if about_col is None:
         return jsonify({'error': 'DB unavailable'}), 500
     data    = request.json or {}
-    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location', 'social_links', 'email', 'phone', 'showreel', 'name'}
+    allowed = {'role', 'hero_tag', 'hero_desc', 'exp_hours', 'cards', 'profile_url', 'location', 'social_links', 'email', 'phone', 'showreel'}
     update  = {k: v for k, v in data.items() if k in allowed}
     if not update:
         return jsonify({'error': 'Nothing to update'}), 400
@@ -572,23 +571,6 @@ def delete_credit_video(cat_id, idx):
     videos.pop(idx)
     credits_col.update_one({'_id': oid}, {'$set': {'videos': videos}})
     return jsonify({'status': 'deleted'})
-
-@app.route('/api/admin/credits/<cat_id>/videos/reorder', methods=['POST'])
-@login_required
-def reorder_credit_videos(cat_id):
-    if credits_col is None:
-        return jsonify({'error': 'DB unavailable'}), 500
-    oid = safe_object_id(cat_id)
-    if not oid:
-        return jsonify({'error': 'Invalid id'}), 400
-    order = (request.json or {}).get('order', [])
-    doc = credits_col.find_one({'_id': oid})
-    if not doc:
-        return jsonify({'error': 'Category not found'}), 404
-    videos = doc.get('videos', [])
-    reordered = [videos[i] for i in order if 0 <= i < len(videos)]
-    credits_col.update_one({'_id': oid}, {'$set': {'videos': reordered}})
-    return jsonify({'status': 'reordered'})
 
 # ── ADMIN API — WORK (reorder MUST be before <work_id>) ──────────────────────
 @app.route('/api/admin/work/reorder', methods=['POST'])
@@ -767,18 +749,6 @@ def delete_skill(skill_id):
         return jsonify({'error': 'Invalid id'}), 400
     skills_col.delete_one({'_id': oid})
     return jsonify({'status': 'deleted'})
-
-@app.route('/api/admin/skills/reorder', methods=['POST'])
-@login_required
-def reorder_skills():
-    if skills_col is None:
-        return jsonify({'error': 'DB unavailable'}), 500
-    order = (request.json or {}).get('order', [])
-    for item in order:
-        oid = safe_object_id(item.get('id'))
-        if oid:
-            skills_col.update_one({'_id': oid}, {'$set': {'order': item['order']}})
-    return jsonify({'status': 'reordered'})
 
 @app.route('/api/admin/available', methods=['POST'])
 @login_required
