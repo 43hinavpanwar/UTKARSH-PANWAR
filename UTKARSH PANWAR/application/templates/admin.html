@@ -805,10 +805,6 @@
             <input id="a-hero_tag" placeholder="FX TD @ DNEG" />
           </div>
           <div class="field">
-            <label><i class="fas fa-user"></i> Full Name</label>
-            <input id="a-name" placeholder="Utkarsh Panwar" />
-          </div>
-          <div class="field">
             <label><i class="fas fa-briefcase"></i> Role Title</label>
             <input id="a-role" placeholder="FX TD · DNEG" />
           </div>
@@ -1200,7 +1196,6 @@
         const d = await api("/api/about");
         document.getElementById("a-hero_tag").value = d.hero_tag || "";
         document.getElementById("a-hero_desc").value = d.hero_desc || "";
-        document.getElementById("a-name").value = d.name || "";
         document.getElementById("a-role").value = d.role || "";
         document.getElementById("a-exp_hours").value = d.exp_hours || "";
         document.getElementById("a-profile_url").value = d.profile_url || "";
@@ -1266,7 +1261,6 @@
         const payload = {
           hero_tag: document.getElementById("a-hero_tag").value,
           hero_desc: document.getElementById("a-hero_desc").value,
-          name:     document.getElementById("a-name").value.trim(),
           role: document.getElementById("a-role").value,
           exp_hours:
             parseInt(document.getElementById("a-exp_hours").value) || 0,

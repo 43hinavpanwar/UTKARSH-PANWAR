@@ -182,17 +182,6 @@ def seed():
         ])
         logger.info("Seeded Work data")
 
-    if skills_col.count_documents({}) == 0:
-        skills_col.insert_many([
-            {'name': 'Houdini',  'level': 95, 'order': 0},
-            {'name': 'Nuke',     'level': 85, 'order': 1},
-            {'name': 'Maya',     'level': 75, 'order': 2},
-            {'name': '3ds Max',  'level': 70, 'order': 3},
-            {'name': 'Python',   'level': 65, 'order': 4},
-            {'name': 'Renderman','level': 80, 'order': 5},
-        ])
-        logger.info("Seeded Skills data")
-
     if companies_col.count_documents({}) == 0:
         companies_col.insert_many([
             {
