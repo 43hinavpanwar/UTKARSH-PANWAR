@@ -592,112 +592,31 @@ section {
   letter-spacing: 0.1em;
 }
 
-/* ACCENT PICKER - moved to playground toolbar */
-
-/* PLAYGROUND TOOLBAR */
-#pg-toolbar {
-  position: fixed;
-  bottom: 7rem;
-  right: 3rem;
-  z-index: 9990;
-}
-#pg-trigger {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  background: var(--accent);
-  border: none;
-  color: #fff;
-  font-size: 1.6rem;
-  cursor: pointer;
+/* ACCENT PICKER */
+#accent-picker {
+  margin-top: 1.6rem;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px var(--glow);
-  transition: transform 0.3s, background 0.3s;
-}
-#pg-trigger:hover { transform: scale(1.1) rotate(20deg); }
-#pg-panel {
-  position: absolute;
-  bottom: 60px;
-  right: 0;
-  width: 220px;
-  background: rgba(10,10,14,0.97);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 14px;
-  padding: 1.2rem;
-  display: none;
   flex-direction: column;
-  gap: 0;
-  backdrop-filter: blur(16px);
-  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+  align-items: center;
+  gap: 0.7rem;
 }
-#pg-panel.open { display: flex; }
-.pg-section-label {
-  font-size: 0.7rem;
+.accent-label {
+  font-size: 0.85rem;
   font-weight: 700;
   letter-spacing: 0.25em;
-  color: #666;
-  margin-bottom: 0.6rem;
+  color: var(--muted);
 }
 #picker-canvas {
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: crosshair;
   display: block;
-  width: 100%;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-  margin-bottom: 0.5rem;
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
 }
 #hue-strip {
   border-radius: 4px;
   cursor: crosshair;
   display: block;
-  width: 100%;
-  box-shadow: 0 0 0 1px rgba(255,255,255,0.08);
-}
-#pg-sim-btns,
-#pg-pass-btns,
-#pg-crt-btns {
-  display: flex;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  margin-bottom: 0;
-}
-.pg-btn {
-  flex: 1;
-  min-width: 0;
-  padding: 0.4rem 0.3rem;
-  border-radius: 6px;
-  border: 1px solid rgba(255,255,255,0.1);
-  background: transparent;
-  color: #888;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  cursor: pointer;
-  transition: all 0.2s;
-  white-space: nowrap;
-}
-.pg-btn:hover { border-color: var(--accent); color: var(--accent); }
-.pg-btn.active {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #fff;
-}
-
-/* CRT overlay */
-#crt-overlay {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 99997;
-  background: repeating-linear-gradient(
-    0deg,
-    rgba(0,0,0,0.08) 0px,
-    rgba(0,0,0,0.08) 1px,
-    transparent 1px,
-    transparent 3px
-  );
+  box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
 }
 #about-cards {
   display: flex;
