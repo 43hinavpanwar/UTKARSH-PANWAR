@@ -119,7 +119,7 @@ def seed():
             'role': 'FX TD · DNEG',
             'hero_tag': 'FX TD @ DNEG',
             'hero_desc': 'Versatile Visual Effects Artist — transforming imagination into cinematic reality through Houdini, Nuke & beyond.',
-            'exp_hours': 7000,
+            'exp_hours': 10000,
             'email': 'utkarshpanwar01@gmail.com',
             'phone': '+91 8810669600',
             'showreel': 'https://player.vimeo.com/video/836954122?h=351a362af3&autoplay=1&title=0&byline=0&portrait=0',
@@ -139,55 +139,6 @@ def seed():
         })
         logger.info("Seeded About data")
 
-    if credits_col.count_documents({}) == 0:
-        credits_col.insert_many([
-            {'category': 'Movies', 'order': 0, 'videos': [
-                {'embed': 'https://www.youtube.com/embed/aF08WVSvCok?si=QgolsovMou3aGv6z', 'caption': 'TOXIC'},
-                {'embed': 'https://www.youtube.com/embed/ebAznVtYY84?si=rdk2BZb3Uz2gwTci', 'caption': 'IKKIS'},
-                {'embed': 'https://www.youtube.com/embed/qx6dGxCQD-M?si=tnZ5A_mrOJLtdint', 'caption': 'BORDER 2'},
-                {'embed': 'https://www.youtube.com/embed/Mod_oXpftJA?si=c4hpWCV9bGKSZxPL', 'caption': 'THAMMA'},
-            ]},
-            {'category': 'Masha and Bear', 'order': 1, 'videos': [
-                {'embed': 'https://www.youtube-nocookie.com/embed/iLEGrPo6zVc', 'caption': 'Episode 1'},
-                {'embed': 'https://www.youtube-nocookie.com/embed/Z0mnhCY7ofE', 'caption': 'Episode 2'},
-                {'embed': 'https://www.youtube-nocookie.com/embed/FzhOMZIQLr8', 'caption': 'Episode 3'},
-                {'embed': 'https://youtube.com/embed/UhKudfHrmUA?si=Z8o_9tWrFQuKSS3N', 'caption': 'Episode 4'},
-            ]},
-            {'category': 'Other Projects', 'order': 2, 'videos': [
-                {'embed': 'https://player.vimeo.com/video/894178647?dnt=1', 'caption': 'Luka Clone'},
-                {'embed': 'https://player.vimeo.com/video/894175740?dnt=1', 'caption': 'Spiderman'},
-                {'embed': 'https://player.vimeo.com/video/894174504?dnt=1', 'caption': 'Love Dosti India'},
-            ]},
-        ])
-        logger.info("Seeded Credits data")
-
-    if work_col.count_documents({}) == 0:
-        work_col.insert_many([
-            {'order': 0, 'num': '01', 'vimeo': '894517786?h=e09950ed39', 'thumb': 'IMAGE/PROJECTS/1.jpg',
-             'title': 'Houdini Burning Tower', 'tags': ['FX', 'Houdini', 'Pyro'],
-             'desc': 'A large-scale fire and destruction simulation built entirely in Houdini — pyro, rigid body dynamics, and custom shading for a cinematic result.',
-             'link': 'https://utkarshpanwar11.artstation.com/projects/rJZ3mm'},
-            {'order': 1, 'num': '02', 'vimeo': '807377032?h=685092efbc', 'thumb': 'IMAGE/PROJECTS/2.jpg',
-             'title': 'Melting Statue', 'tags': ['FX', 'Simulation', 'FLIP'],
-             'desc': 'A fluid simulation of a stone statue melting under extreme heat — combining FLIP fluids, surface tension, and viscosity controls in Houdini.',
-             'link': 'https://utkarshpanwar11.artstation.com/projects/zPPlbw'},
-            {'order': 2, 'num': '03', 'vimeo': '894519229?h=f10b4f3753', 'thumb': 'IMAGE/PROJECTS/3.jpg',
-             'title': 'Houdini Destruction', 'tags': ['FX', 'Destruction', 'RBD'],
-             'desc': 'Procedural building destruction using Voronoi fracturing, constraint networks, and debris systems — fully art-directable and production-ready.',
-             'link': 'https://utkarshpanwar11.artstation.com/projects/ob20dL'},
-            {'order': 3, 'num': '04', 'vimeo': '836954122?h=351a362af3', 'thumb': 'IMAGE/PROJECTS/4.png',
-             'title': 'Clouds', 'tags': ['VFX', 'Houdini', 'Volumes'],
-             'desc': "Volumetric cloud simulation using Houdini's sparse pyro solver — achieving photorealistic cumulus formations with full lighting and shading control.",
-             'link': ''},
-        ])
-        logger.info("Seeded Work data")
-
-    if stills_col is not None and stills_col.count_documents({}) == 0:
-        stills_col.insert_many([
-            {'url': f'/static/IMAGE/STILLS/IMG ({i}).jpg', 'caption': f'Still {i}', 'order': i - 1}
-            for i in range(1, 10)
-        ])
-        logger.info("Seeded Stills data")
 seed()
 
 # ── ONE-TIME MIGRATIONS ───────────────────────────────────────────────────────
